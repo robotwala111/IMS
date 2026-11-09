@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scientech-IMS User Manual</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5d6880;
+      --line: #d9e0ea;
+      --soft: #f6f8fb;
+      --brand: #2563eb;
+      --brand-dark: #153f99;
+      --accent: #0f766e;
+      --warn: #a16207;
+      --danger: #b91c1c;
+      --ok: #166534;
+      --paper: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #eef2f7;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.58;
+    }
+
+    a { color: var(--brand-dark); }
+
+    .manual {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--paper);
+      min-height: 100vh;
+      box-shadow: 0 0 40px rgba(23, 32, 51, 0.08);
+    }
+
+    header {
+      background: linear-gradient(135deg, #10213f, #1e4fd7);
+      color: #fff;
+      padding: 42px 48px 38px;
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    header p {
+      max-width: 850px;
+      margin: 0;
+      color: #dbe7ff;
+      font-size: 16px;
+    }
+
+    .doc-meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .meta-card {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .meta-label {
+      display: block;
+      color: #b9c9f5;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .meta-value {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      align-items: start;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #fbfcfe;
+      padding: 26px 18px;
+    }
+
+    nav h2 {
+      margin: 0 0 14px;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    nav a {
+      display: block;
+      padding: 7px 8px;
+      color: #21304c;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    nav a:hover {
+      background: #edf3ff;
+      color: var(--brand-dark);
+    }
+
+    .content {
+      padding: 34px 48px 70px;
+      max-width: 860px;
+    }
+
+    section {
+      margin: 0 0 46px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf0f5;
+    }
+
+    section:last-child {
+      border-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 25px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      color: #101b31;
+    }
+
+    h3 {
+      margin: 26px 0 10px;
+      font-size: 18px;
+      color: #182742;
+      letter-spacing: 0;
+    }
+
+    h4 {
+      margin: 20px 0 8px;
+      font-size: 15px;
+      color: #20304d;
+    }
+
+    p { margin: 8px 0 12px; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin: 8px 0 16px;
+    }
+
+    li { margin: 5px 0; }
+
+    code {
+      background: #eef3fb;
+      border: 1px solid #dce5f3;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 90%;
+    }
+
+    .callout {
+      border-left: 4px solid var(--brand);
+      background: #f3f7ff;
+      padding: 12px 14px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .callout.warning {
+      border-left-color: var(--warn);
+      background: #fff8e8;
+    }
+
+    .callout.success {
+      border-left-color: var(--ok);
+      background: #effaf3;
+    }
+
+    .callout.danger {
+      border-left-color: var(--danger);
+      background: #fff1f1;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 16px 0 4px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .tile h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .tile p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f6fa;
+      font-weight: 700;
+      color: #1c2b45;
+    }
+
+    .workflow {
+      counter-reset: step;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .workflow li {
+      counter-increment: step;
+      position: relative;
+      padding: 0 0 14px 42px;
+      margin: 0;
+      border-left: 2px solid #d9e4f5;
+    }
+
+    .workflow li:last-child {
+      border-left-color: transparent;
+    }
+
+    .workflow li::before {
+      content: counter(step);
+      position: absolute;
+      left: -15px;
+      top: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .kbd {
+      display: inline-block;
+      border: 1px solid #cad2df;
+      background: #f7f8fb;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+      color: #23324d;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .status.ok { color: var(--ok); background: #eaf8ef; border-color: #b8e3c5; }
+    .status.warn { color: var(--warn); background: #fff6da; border-color: #f3d37c; }
+    .status.danger { color: var(--danger); background: #ffefef; border-color: #f2b6b6; }
+    .status.info { color: var(--brand-dark); background: #edf4ff; border-color: #b9cdf8; }
+
+    footer {
+      padding: 22px 48px 40px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    @media (max-width: 900px) {
+      header { padding: 30px 22px; }
+      .doc-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { grid-template-columns: 1fr; }
+      nav {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .content { padding: 28px 22px 54px; }
+      .quick-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: white; }
+      .manual { box-shadow: none; max-width: none; }
+      nav { display: none; }
+      main { display: block; }
+      header { background: white; color: #000; border-bottom: 2px solid #000; }
+      header p, .meta-label, .small { color: #333; }
+      .meta-card { border-color: #777; background: white; }
+      .content { max-width: none; padding: 28px 34px; }
+      section { break-inside: avoid; }
+      a { color: #000; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="manual">
+    <header>
+      <h1>Scientech-IMS User Manual</h1>
+      <p>
+        A practical guide for using the Scientech Inventory Management System. This manual is written for new users and explains each screen, daily workflow, document, and common mistake in simple language.
+      </p>
+      <div class="doc-meta">
+        <div class="meta-card">
+          <span class="meta-label">Application</span>
+          <span class="meta-value">Scientech-IMS</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Manual Version</span>
+          <span class="meta-value">1.0</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Prepared For</span>
+          <span class="meta-value">Inventory, Store, Admin, Site Teams</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Last Updated</span>
+          <span class="meta-value">27-Jun-2026</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <nav>
+        <h2>Contents</h2>
+        <a href="#intro">1. Introduction</a>
+        <a href="#basic-terms">2. Basic Terms</a>
+        <a href="#roles">3. User Roles</a>
+        <a href="#login">4. Login and Navigation</a>
+        <a href="#dashboard">5. Dashboard</a>
+        <a href="#categories">6. Categories</a>
+        <a href="#products">7. Products</a>
+        <a href="#stock">8. Stock Levels</a>
+        <a href="#receive-stock">9. Receive Stock</a>
+        <a href="#issue-stock">10. Issue Stock</a>
+        <a href="#transfers">11. Transfers</a>
+        <a href="#documents">12. PI, DC, Registers</a>
+        <a href="#compliance">13. Compliance</a>
+        <a href="#locations">14. Locations</a>
+        <a href="#personnel">15. Personnel</a>
+        <a href="#users">16. User Management</a>
+        <a href="#audit">17. Audit Logs</a>
+        <a href="#monthly-email">18. Monthly Emails</a>
+        <a href="#low-stock">19. Low Stock Alerts</a>
+        <a href="#daily-workflows">20. Daily Workflows</a>
+        <a href="#troubleshooting">21. Troubleshooting</a>
+        <a href="#best-practices">22. Best Practices</a>
+      </nav>
+
+      <div class="content">
+        <section id="intro">
+          <h2>1. Introduction</h2>
+          <p>
+            Scientech-IMS is used to manage inventory, stock movement, equipment, instruments, consumables, accessories, calibration, maintenance, transfers, and audit documents.
+          </p>
+          <p>
+            The system is designed so that daily users can enter stock and movement details, while managers and admins can approve requests, review alerts, download registers, and track audit history.
+          </p>
+
+          <div class="callout">
+            <strong>Main idea:</strong> The system stores business records permanently, such as products, stock, transactions, transfer history, PI details, DC details, calibration, and maintenance. Generated files such as monthly ZIP copies can be temporary, but the source data remains in the system.
+          </div>
+
+          <div class="quick-grid">
+            <div class="tile">
+              <h3>For Store Users</h3>
+              <p>Receive stock, issue stock, check stock balance, and respond to low-stock situations.</p>
+            </div>
+            <div class="tile">
+              <h3>For Site Users</h3>
+              <p>Request material, confirm transfer receipt, and track assigned equipment.</p>
+            </div>
+            <div class="tile">
+              <h3>For Managers</h3>
+              <p>Approve transfers, review compliance blocks, and monitor site-wise stock.</p>
+            </div>
+            <div class="tile">
+              <h3>For Admin</h3>
+              <p>Manage users, categories, locations, monthly documents, alerts, and audit data.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="basic-terms">
+          <h2>2. Basic Terms</h2>
+          <p>New users should understand these terms before using the system.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Term</th>
+                <th>Meaning</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Product</td>
+                <td>An item master record. It defines what the item is.</td>
+                <td>DPT Chemical, Film Box, Ultrasonic Flaw Detector</td>
+              </tr>
+              <tr>
+                <td>Category</td>
+                <td>A grouping used to organize products and decide stock handling.</td>
+                <td>Chemicals, Equipment, Instruments, Accessories</td>
+              </tr>
+              <tr>
+                <td>Quantity Based</td>
+                <td>Items counted by quantity. These appear in Stock Levels.</td>
+                <td>Consumables and accessories</td>
+              </tr>
+              <tr>
+                <td>Serialized</td>
+                <td>Items tracked by serial number. These appear in Products/assets.</td>
+                <td>Equipment and instruments</td>
+              </tr>
+              <tr>
+                <td>Low Stock Alert Qty</td>
+                <td>The quantity at which the system marks the item as low stock.</td>
+                <td>If alert qty is 5 and stock becomes 5 or less, it is low stock.</td>
+              </tr>
+              <tr>
+                <td>PI</td>
+                <td>Purchase Indent. Internal request document before issue/transfer.</td>
+                <td>PI generated when transfer or documented issue is created.</td>
+              </tr>
+              <tr>
+                <td>DC</td>
+                <td>Delivery Challan. Dispatch/issue document for material movement.</td>
+                <td>DC generated for approved/dispatched transfer.</td>
+              </tr>
+              <tr>
+                <td>Stock Register</td>
+                <td>Register showing stock receipt, issue, transfer, and balance.</td>
+                <td>STR-F-01 Stock Register</td>
+              </tr>
+              <tr>
+                <td>Purchase Register</td>
+                <td>Register showing purchase/receipt details from suppliers.</td>
+                <td>PUR-F-07 Purchase Register</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="roles">
+          <h2>3. User Roles</h2>
+          <p>The available screens and actions depend on the user's role.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Main Permissions</th>
+                <th>Typical User</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Admin</td>
+                <td>Full access to users, locations, categories, stock, transfers, reports, generated documents, and settings.</td>
+                <td>System owner or CEO/admin user</td>
+              </tr>
+              <tr>
+                <td>Head Office Manager</td>
+                <td>Can manage most inventory workflows and view company-wide information.</td>
+                <td>Head office inventory manager</td>
+              </tr>
+              <tr>
+                <td>Location Manager</td>
+                <td>Can work mainly with assigned locations and their stock/transfer workflows.</td>
+                <td>Site or branch manager</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout warning">
+            <strong>Important:</strong> If a user cannot see a location or cannot approve a transfer, first check that the user has the correct role and location assignment.
+          </div>
+        </section>
+
+        <section id="login">
+          <h2>4. Login and Navigation</h2>
+          <h3>Logging In</h3>
+          <ol>
+            <li>Open the Scientech-IMS application link.</li>
+            <li>Enter your email address and password.</li>
+            <li>Click <strong>Login</strong>.</li>
+            <li>After login, the Dashboard opens first.</li>
+          </ol>
+
+          <h3>Main Menu</h3>
+          <p>The left sidebar contains the main sections:</p>
+          <ul>
+            <li><strong>Dashboard:</strong> Summary of stock, alerts, recent movement, and key counts.</li>
+            <li><strong>Products:</strong> Add/view equipment, instruments, consumables, and accessories.</li>
+            <li><strong>Stock Levels:</strong> Manage quantity-based stock.</li>
+            <li><strong>Categories:</strong> Define item categories and stock handling.</li>
+            <li><strong>Transfers:</strong> Request, approve, dispatch, and receive stock transfers.</li>
+            <li><strong>Locations:</strong> Manage branches, sites, or offices.</li>
+            <li><strong>Compliance:</strong> View equipment/instrument calibration and maintenance status.</li>
+            <li><strong>Personnel:</strong> Manage field staff and employee records.</li>
+            <li><strong>Audit Logs:</strong> Review important system actions.</li>
+            <li><strong>User Management:</strong> Add and manage login users.</li>
+          </ul>
+
+          <h3>Search Bar</h3>
+          <p>The top search bar helps search across modules. Use it when you know a product name, transfer number, serial number, or related keyword.</p>
+        </section>
+
+        <section id="dashboard">
+          <h2>5. Dashboard</h2>
+          <p>The Dashboard is the first place to check the overall health of inventory.</p>
+
+          <h3>What You Can See</h3>
+          <ul>
+            <li>Total products and stock summary.</li>
+            <li>Low stock count.</li>
+            <li>Calibration alerts.</li>
+            <li>Recent activity.</li>
+            <li>Location-wise or category-wise overview.</li>
+          </ul>
+
+          <h3>Low Stock Card</h3>
+          <p>Click the low stock card to see which products have reached or gone below the alert quantity.</p>
+          <div class="callout">
+            Low stock is calculated when <code>quantity_on_hand <= low_stock_alert_qty</code>. Example: if DPT Chemical has alert qty 5 and current stock is 5, it is already low stock.
+          </div>
+        </section>
+
+        <section id="categories">
+          <h2>6. Categories</h2>
+          <p>Categories define how products are organized and how they are handled in stock.</p>
+
+          <h3>When to Create a Category</h3>
+          <p>Create a category when you need a new group of products, such as a chemical group, accessory group, equipment group, or instrument group.</p>
+
+          <h3>Stock Input / Handling</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Handling</th>
+                <th>Use For</th>
+                <th>Where It Appears</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Quantity</td>
+                <td>Consumables and accessories counted by quantity.</td>
+                <td>Stock Levels</td>
+              </tr>
+              <tr>
+                <td>Serialized</td>
+                <td>Equipment and instruments tracked by serial number.</td>
+                <td>Products / Compliance</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Add Category</h3>
+          <ol>
+            <li>Go to <strong>Categories</strong>.</li>
+            <li>Click <strong>Add Category</strong>.</li>
+            <li>Enter the category name.</li>
+            <li>Select stock handling: <strong>Quantity</strong> or <strong>Serialized</strong>.</li>
+            <li>Add description if needed.</li>
+            <li>Save.</li>
+          </ol>
+
+          <div class="callout warning">
+            Do not create duplicate categories for the same purpose. Before adding a new category, search existing categories first.
+          </div>
+        </section>
+
+        <section id="products">
+          <h2>7. Products</h2>
+          <p>Products are master records. They describe the item, but stock quantity is handled separately for quantity-based items.</p>
+
+          <h3>Product Types</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>How It Is Tracked</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Equipment</td>
+                <td>Serialized, one serial number per item.</td>
+                <td>UT machine, yoke, gauge</td>
+              </tr>
+              <tr>
+                <td>Instrument</td>
+                <td>Serialized, often calibration controlled.</td>
+                <td>Measuring instrument</td>
+              </tr>
+              <tr>
+                <td>Consumable</td>
+                <td>Quantity based.</td>
+                <td>Chemicals, films, cleaners</td>
+              </tr>
+              <tr>
+                <td>Accessory</td>
+                <td>Usually quantity based unless configured as serialized.</td>
+                <td>Cables, probes, holders</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Add Equipment or Instrument</h3>
+          <ol>
+            <li>Go to <strong>Products</strong>.</li>
+            <li>Click <strong>Add Product</strong>.</li>
+            <li>Select type as equipment or instrument.</li>
+            <li>Enter name, ID number, serial number, category, location, make, model, and purchase details.</li>
+            <li>If calibration is required, mark it accordingly.</li>
+            <li>Save.</li>
+          </ol>
+
+          <h3>Add Consumable or Accessory</h3>
+          <ol>
+            <li>Use <strong>Stock Levels</strong> for normal quantity-based stock creation.</li>
+            <li>Enter product details and initial location.</li>
+            <li>Enter opening quantity, even if it is 0.</li>
+            <li>Enter low stock alert quantity.</li>
+          </ol>
+
+          <div class="callout">
+            Equipment and instruments do not need item count like consumables because each piece is tracked separately by serial number.
+          </div>
+        </section>
+
+        <section id="stock">
+          <h2>8. Stock Levels</h2>
+          <p>Stock Levels is used for consumables and accessories that are tracked by quantity.</p>
+
+          <h3>Main Buttons</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Button</th>
+                <th>Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Add Stock Item</td>
+                <td>Create a quantity-based product and its initial stock record.</td>
+              </tr>
+              <tr>
+                <td>Receive Stock</td>
+                <td>Add purchased stock received from supplier.</td>
+              </tr>
+              <tr>
+                <td>Issue Stock</td>
+                <td>Issue quantity-based stock with PI and DC document flow.</td>
+              </tr>
+              <tr>
+                <td>Adjust Stock</td>
+                <td>Correct stock quantity for approved reasons.</td>
+              </tr>
+              <tr>
+                <td>Send Alert</td>
+                <td>Manually send low-stock email alerts.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Columns to Understand</h3>
+          <ul>
+            <li><strong>Opening:</strong> Initial or opening balance in the report context.</li>
+            <li><strong>Received:</strong> Quantity received into stock.</li>
+            <li><strong>Issued:</strong> Quantity issued or transferred out.</li>
+            <li><strong>Closing:</strong> Current balance.</li>
+            <li><strong>Reserved:</strong> Quantity already reserved for transfer requests.</li>
+            <li><strong>Available:</strong> Quantity that can still be used.</li>
+            <li><strong>Alert Qty:</strong> Low-stock trigger value.</li>
+            <li><strong>Status:</strong> OK or Low Stock.</li>
+          </ul>
+
+          <h3>Low Stock Alert Quantity</h3>
+          <p>When adding a new quantity-based item, enter the low stock alert quantity. Admin or Head Office can later change this value using the alert/bell action in Stock Levels.</p>
+
+          <div class="callout success">
+            Example: If DPT Chemical should be reordered when stock reaches 3, set alert qty as 3. The system marks it low stock when current quantity is 3, 2, 1, or 0.
+          </div>
+        </section>
+
+        <section id="receive-stock">
+          <h2>9. Receive Stock</h2>
+          <p>Use Receive Stock when material is purchased from a supplier and physically received.</p>
+
+          <h3>Steps</h3>
+          <ol class="workflow">
+            <li><strong>Open Stock Levels.</strong> Click <strong>Receive Stock</strong>.</li>
+            <li><strong>Select location.</strong> Choose where the material is received.</li>
+            <li><strong>Enter supplier and invoice details.</strong> These details are used for the Purchase Register.</li>
+            <li><strong>Add line items.</strong> Select item and enter received quantity.</li>
+            <li><strong>Save receipt.</strong> Stock quantity increases at the selected location.</li>
+            <li><strong>Purchase Register updates.</strong> The receipt is available in the purchase register format.</li>
+          </ol>
+
+          <h3>Purchase Register Purpose</h3>
+          <p>Purchase Register is for audit and purchase tracking. It records supplier, invoice number, description, quantity received, type, and remarks.</p>
+        </section>
+
+        <section id="issue-stock">
+          <h2>10. Issue Stock</h2>
+          <p>Use Issue Stock when quantity-based stock is issued for use. The system creates PI and DC documents for audit.</p>
+
+          <h3>When to Use Issue Stock</h3>
+          <ul>
+            <li>Issuing consumables or accessories to a site, user, department, or same location work area.</li>
+            <li>Documented local issue inside the same location.</li>
+            <li>Material issue that requires PI and DC reference.</li>
+          </ul>
+
+          <h3>Steps</h3>
+          <ol class="workflow">
+            <li><strong>Go to Stock Levels.</strong> Click <strong>Issue Stock</strong>.</li>
+            <li><strong>Select item.</strong> Choose consumable or accessory.</li>
+            <li><strong>Select source location.</strong> This is where stock will be deducted.</li>
+            <li><strong>Select destination or same location details.</strong> Enter where the material is being used/sent.</li>
+            <li><strong>Enter quantity.</strong> The system checks available stock.</li>
+            <li><strong>Submit.</strong> Stock is issued, and PI/DC references become available.</li>
+            <li><strong>Print documents if required.</strong> Use Print PI and Print DC buttons.</li>
+          </ol>
+
+          <div class="callout warning">
+            Same-location Issue Stock should not be received again. The system prevents receiving local issue transfers because receiving would add stock back incorrectly.
+          </div>
+        </section>
+
+        <section id="transfers">
+          <h2>11. Transfers</h2>
+          <p>Transfers manage material movement from one location to another, or controlled local movement with responsible person details.</p>
+
+          <h3>Transfer Dashboard</h3>
+          <p>The top cards show Total, Pending, In Transit, Completed, and Rejected transfers.</p>
+
+          <h3>Views</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>View</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>My Requests</td>
+                <td>Transfers created by you or visible to your role.</td>
+              </tr>
+              <tr>
+                <td>For My Action</td>
+                <td>Transfers assigned to you for approval, rejection, or dispatch.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Transfer Status Flow</h3>
+          <ol class="workflow">
+            <li><strong>Requested.</strong> Transfer request is created. Stock is reserved at source.</li>
+            <li><strong>Approved.</strong> Manager/admin approves. PI is linked/approved and DC is available.</li>
+            <li><strong>In Transit.</strong> Source dispatches material. Stock is deducted from source.</li>
+            <li><strong>Awaiting Receipt.</strong> Destination has not yet confirmed receipt.</li>
+            <li><strong>Received.</strong> Destination confirms receipt. Stock is added to destination.</li>
+          </ol>
+
+          <h3>Create Transfer Request</h3>
+          <ol>
+            <li>Go to <strong>Transfers</strong>.</li>
+            <li>Click <strong>New Transfer Request</strong>.</li>
+            <li>Select From Location and To Location.</li>
+            <li>Select responsible person at source.</li>
+            <li>If same location, select destination responsible person and receiving area/person.</li>
+            <li>Select transfer type: Consumable, Accessory, Equipment, or Instrument.</li>
+            <li>Add item and quantity.</li>
+            <li>Submit.</li>
+          </ol>
+
+          <h3>Approve or Reject</h3>
+          <p>Assigned users can use <strong>For My Action</strong> to approve or reject transfer requests. Rejection requires a reason.</p>
+
+          <h3>Dispatch</h3>
+          <p>After approval, click <strong>Mark Dispatched</strong> or Ship. This deducts stock from source and creates transfer-out movement.</p>
+
+          <h3>Receive</h3>
+          <p>For inter-location transfers, the destination confirms receipt. This adds stock to the destination and completes the movement.</p>
+
+          <div class="callout">
+            Equipment and instrument transfers are checked against compliance. If calibration or maintenance is not acceptable, the transfer may be blocked until corrected.
+          </div>
+        </section>
+
+        <section id="documents">
+          <h2>12. PI, DC, Purchase Register, and Stock Register</h2>
+
+          <h3>Purchase Indent (PI)</h3>
+          <p>PI is the internal request document. It is generated automatically for transfer and issue workflows.</p>
+
+          <h4>PI contains:</h4>
+          <ul>
+            <li>PI number.</li>
+            <li>Date.</li>
+            <li>From and To information.</li>
+            <li>Item description/specification.</li>
+            <li>Quantity required.</li>
+            <li>Requested by/signature details.</li>
+          </ul>
+
+          <h3>Delivery Challan (DC)</h3>
+          <p>DC is the dispatch/issue document. It is available after approval or dispatch depending on workflow.</p>
+
+          <h4>DC contains:</h4>
+          <ul>
+            <li>DC number.</li>
+            <li>Date and reference details.</li>
+            <li>To address/location.</li>
+            <li>Item description.</li>
+            <li>Quantity.</li>
+            <li>Remarks and receiver signature area.</li>
+          </ul>
+
+          <h3>Stock Register</h3>
+          <p>Stock Register follows the STR-F-01 format and tracks opening balance, received quantity, issued/transfer details, and closing balance.</p>
+
+          <h3>Purchase Register</h3>
+          <p>Purchase Register follows the PUR-F-07 format and records supplier purchase/receipt details for audit.</p>
+
+          <h3>Generated Document Storage</h3>
+          <p>When PI, DC, purchase register, stock register, or compliance report files are generated, temporary generated copies can be stored for monthly email and download.</p>
+          <div class="callout success">
+            Generated files may be deleted after retention, but source data stays permanently in the system. This means reports can be regenerated later.
+          </div>
+        </section>
+
+        <section id="compliance">
+          <h2>13. Compliance</h2>
+          <p>Compliance helps verify whether equipment or instruments are fit to transfer/use based on calibration and maintenance status.</p>
+
+          <h3>Compliance Tabs</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tab</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>All Equipment</td>
+                <td>Shows all serialized equipment/instruments and whether they can transfer.</td>
+              </tr>
+              <tr>
+                <td>Calibration</td>
+                <td>Shows items with calibration issues or due-soon status.</td>
+              </tr>
+              <tr>
+                <td>Maintenance</td>
+                <td>Shows items needing service/maintenance attention.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Status Meaning</h3>
+          <ul>
+            <li><span class="status ok">Clear</span> Item can be transferred.</li>
+            <li><span class="status warn">Due Soon</span> Calibration is approaching due date.</li>
+            <li><span class="status danger">Blocked</span> Transfer is not allowed until issue is corrected.</li>
+          </ul>
+
+          <h3>Log Calibration</h3>
+          <ol>
+            <li>Go to <strong>Compliance</strong>.</li>
+            <li>Find the equipment or instrument.</li>
+            <li>Click <strong>Calibration</strong>.</li>
+            <li>Enter calibration date, due date, result, supplier if applicable, and notes.</li>
+            <li>Save.</li>
+          </ol>
+
+          <h3>Log Maintenance / Service History</h3>
+          <ol>
+            <li>Go to <strong>Compliance</strong>.</li>
+            <li>Find the equipment or instrument.</li>
+            <li>Click <strong>Service History</strong>.</li>
+            <li>Enter service details and completion information.</li>
+            <li>Save.</li>
+          </ol>
+
+          <h3>Monthly Compliance CSV</h3>
+          <p>The monthly document email includes a compliance CSV showing current compliance status, blocked reasons, calibration due data, and maintenance status.</p>
+        </section>
+
+        <section id="locations">
+          <h2>14. Locations</h2>
+          <p>Locations represent offices, stores, branches, or sites where stock and equipment are held.</p>
+
+          <h3>Add Location</h3>
+          <ol>
+            <li>Go to <strong>Locations</strong>.</li>
+            <li>Click <strong>Add Location</strong>.</li>
+            <li>Enter name, code, address, and contact details.</li>
+            <li>Save.</li>
+          </ol>
+
+          <h3>Why Location Assignment Matters</h3>
+          <p>User access, stock visibility, transfer approval, and low-stock email routing depend on location assignments.</p>
+        </section>
+
+        <section id="personnel">
+          <h2>15. Personnel</h2>
+          <p>Personnel is used to maintain field staff and employee records, certificates, and related documents.</p>
+
+          <h3>Manage Employees</h3>
+          <ol>
+            <li>Go to <strong>Personnel</strong>.</li>
+            <li>Click <strong>Manage Employees</strong>.</li>
+            <li>Add or edit staff details.</li>
+          </ol>
+
+          <h3>Add Employee Record</h3>
+          <ol>
+            <li>Go to <strong>Personnel</strong>.</li>
+            <li>Click <strong>Add Employee Record</strong>.</li>
+            <li>Select employee and record type.</li>
+            <li>Enter certificate/record details.</li>
+            <li>Save.</li>
+          </ol>
+        </section>
+
+        <section id="users">
+          <h2>16. User Management</h2>
+          <p>User Management is generally used by Admin.</p>
+
+          <h3>Add User</h3>
+          <ol>
+            <li>Go to <strong>User Management</strong>.</li>
+            <li>Click <strong>Add User</strong>.</li>
+            <li>Enter name, email, password, and role.</li>
+            <li>Assign location access if needed.</li>
+            <li>Save.</li>
+          </ol>
+
+          <h3>User Setup Checklist</h3>
+          <ul>
+            <li>Email should be correct because alerts and password workflows use email.</li>
+            <li>Role should match responsibility.</li>
+            <li>Location assignment should match the user's actual work location.</li>
+            <li>Inactive users cannot login.</li>
+          </ul>
+        </section>
+
+        <section id="audit">
+          <h2>17. Audit Logs</h2>
+          <p>Audit Logs show important actions performed in the system. They help answer who changed what and when.</p>
+
+          <h3>Use Audit Logs To Check</h3>
+          <ul>
+            <li>Who created or updated stock.</li>
+            <li>Who approved or rejected a transfer.</li>
+            <li>Who changed user/location/category information.</li>
+            <li>When major actions happened.</li>
+          </ul>
+
+          <div class="callout">
+            Audit logs are for review and traceability. Do not depend on memory or verbal confirmation when an audit log can confirm the action.
+          </div>
+        </section>
+
+        <section id="monthly-email">
+          <h2>18. Monthly Document Emails</h2>
+          <p>The system can prepare monthly generated documents and email them to active Admin email addresses.</p>
+
+          <h3>Monthly ZIP Includes</h3>
+          <ul>
+            <li>PI files generated for the month.</li>
+            <li>DC files generated for the month.</li>
+            <li>Purchase Register XLSX.</li>
+            <li>Stock Register XLSX.</li>
+            <li>Compliance Report CSV.</li>
+          </ul>
+
+          <h3>ZIP Splitting</h3>
+          <p>If the monthly ZIP file becomes too large, the system splits it automatically:</p>
+          <ul>
+            <li>First attempt: one monthly ZIP.</li>
+            <li>If too large: split into 01-15 and 16-end of month ZIPs.</li>
+            <li>If still too large: split into weekly ZIPs.</li>
+          </ul>
+
+          <h3>Retention</h3>
+          <p>Generated file copies are temporary and can expire after the configured retention period, usually 5 days.</p>
+
+          <div class="callout danger">
+            Only generated file copies are deleted. The actual stock, products, transfers, PI data, DC data, calibration, maintenance, and transaction records are not deleted.
+          </div>
+        </section>
+
+        <section id="low-stock">
+          <h2>19. Low Stock Alerts</h2>
+          <p>Low stock alerts help prevent material shortages.</p>
+
+          <h3>When Low Stock Is Triggered</h3>
+          <p>The system marks stock as low when:</p>
+          <p><code>quantity_on_hand <= low_stock_alert_qty</code></p>
+
+          <h3>Automatic Emails</h3>
+          <p>Low-stock emails can be sent automatically when stock falls low and through scheduled checks.</p>
+          <ul>
+            <li>After stock adjustment reduces stock.</li>
+            <li>After issue stock.</li>
+            <li>After transfer dispatch.</li>
+            <li>Through scheduled cron checks.</li>
+          </ul>
+
+          <h3>Recipients</h3>
+          <ul>
+            <li>Location managers assigned to the affected location.</li>
+            <li>Admin and Head Office users for company-wide summary.</li>
+            <li>Additional configured low-stock email addresses, if any.</li>
+          </ul>
+
+          <h3>Manual Send</h3>
+          <p>Go to <strong>Stock Levels</strong> and click <strong>Send Alert</strong> to send low-stock emails manually.</p>
+        </section>
+
+        <section id="daily-workflows">
+          <h2>20. Daily Workflows</h2>
+
+          <h3>Workflow A: New Consumable Received From Supplier</h3>
+          <ol class="workflow">
+            <li>Create category if not already available.</li>
+            <li>Add stock item in Stock Levels with low stock alert quantity.</li>
+            <li>Use Receive Stock when supplier material arrives.</li>
+            <li>Check Stock Levels to confirm quantity increased.</li>
+            <li>Export Purchase Register when required.</li>
+          </ol>
+
+          <h3>Workflow B: Issue Consumable to Same Location Lab</h3>
+          <ol class="workflow">
+            <li>Go to Stock Levels.</li>
+            <li>Click Issue Stock.</li>
+            <li>Select source location and same destination location.</li>
+            <li>Enter receiving area/person, such as Lab or Technician name.</li>
+            <li>Submit issue.</li>
+            <li>Print PI and DC if needed.</li>
+          </ol>
+
+          <h3>Workflow C: Transfer Material to Another Location</h3>
+          <ol class="workflow">
+            <li>Go to Transfers.</li>
+            <li>Create New Transfer Request.</li>
+            <li>Select source and destination locations.</li>
+            <li>Add items and submit.</li>
+            <li>Assigned person approves.</li>
+            <li>Source dispatches material.</li>
+            <li>Destination receives material.</li>
+          </ol>
+
+          <h3>Workflow D: Equipment Transfer With Compliance</h3>
+          <ol class="workflow">
+            <li>Check Compliance page for the equipment.</li>
+            <li>If blocked, log calibration or maintenance first.</li>
+            <li>Create transfer request for serialized item.</li>
+            <li>Approve and dispatch only after compliance is clear.</li>
+            <li>Destination receives the item and confirms movement.</li>
+          </ol>
+
+          <h3>Workflow E: Month End Document Preparation</h3>
+          <ol class="workflow">
+            <li>System generates monthly PI/DC/register/compliance files.</li>
+            <li>System creates one or more ZIP files.</li>
+            <li>ZIP is emailed to active Admin email addresses.</li>
+            <li>Generated copies are retained temporarily.</li>
+            <li>Source records remain available permanently.</li>
+          </ol>
+        </section>
+
+        <section id="troubleshooting">
+          <h2>21. Troubleshooting</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Likely Reason</th>
+                <th>What To Do</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Cannot login</td>
+                <td>Wrong password, inactive user, or server issue.</td>
+                <td>Check email/password. Ask Admin to verify user is active.</td>
+              </tr>
+              <tr>
+                <td>Location not visible</td>
+                <td>User is not assigned to that location.</td>
+                <td>Ask Admin to update user location access.</td>
+              </tr>
+              <tr>
+                <td>Product not showing in Stock Levels</td>
+                <td>It may be serialized equipment/instrument or no stock row exists.</td>
+                <td>Check product type/category. Add stock item or initial location record.</td>
+              </tr>
+              <tr>
+                <td>Transfer approval not allowed</td>
+                <td>User lacks permission, assignment, or location access.</td>
+                <td>Check role, assigned person, and location access.</td>
+              </tr>
+              <tr>
+                <td>Equipment transfer blocked</td>
+                <td>Calibration or maintenance issue exists.</td>
+                <td>Open Compliance page and resolve the listed issue.</td>
+              </tr>
+              <tr>
+                <td>Low stock email not received</td>
+                <td>Email settings, recipient setup, or cron setup may be missing.</td>
+                <td>Check email configuration, user emails, location managers, and cron secret.</td>
+              </tr>
+              <tr>
+                <td>Monthly ZIP not received</td>
+                <td>Admin email missing, email disabled, or cron not configured.</td>
+                <td>Check active Admin email, SMTP settings, and monthly cron setup.</td>
+              </tr>
+              <tr>
+                <td>Stock quantity looks wrong</td>
+                <td>Receipt, issue, transfer, or adjustment may have been entered incorrectly.</td>
+                <td>Review Stock Register, transactions, and audit logs.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Before Asking for Support</h3>
+          <ol>
+            <li>Note the screen name.</li>
+            <li>Note the item name/SKU/serial number.</li>
+            <li>Note the transfer number, PI number, or DC number if available.</li>
+            <li>Take a screenshot of the error or unexpected value.</li>
+            <li>Check Audit Logs if it is related to a change.</li>
+          </ol>
+        </section>
+
+        <section id="best-practices">
+          <h2>22. Best Practices</h2>
+
+          <h3>For Stock Users</h3>
+          <ul>
+            <li>Always select the correct location before receiving or issuing stock.</li>
+            <li>Enter invoice and supplier details during receipt.</li>
+            <li>Do not use adjustment for normal issue or receipt. Use the proper workflow.</li>
+            <li>Set low stock alert quantity when creating new stock items.</li>
+          </ul>
+
+          <h3>For Transfer Users</h3>
+          <ul>
+            <li>Use clear notes when requesting material.</li>
+            <li>Approve only after checking source and destination information.</li>
+            <li>Dispatch only after material physically leaves source.</li>
+            <li>Receive only after material physically reaches destination.</li>
+          </ul>
+
+          <h3>For Compliance Users</h3>
+          <ul>
+            <li>Log calibration as soon as certificate is received.</li>
+            <li>Update maintenance/service status promptly.</li>
+            <li>Check compliance before planning equipment movement.</li>
+          </ul>
+
+          <h3>For Admin</h3>
+          <ul>
+            <li>Keep user roles and location assignments accurate.</li>
+            <li>Make sure admin email is correct for monthly document emails.</li>
+            <li>Keep SMTP and cron secrets configured in deployment.</li>
+            <li>Review audit logs regularly.</li>
+          </ul>
+
+          <div class="callout success">
+            Good data entry is the most important part of the system. If receipt, issue, transfer, and calibration entries are correct, reports and audit documents will also be correct.
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <strong>Scientech-IMS User Manual.</strong> This document is intended as a practical operating reference for users. For system configuration or deployment questions, contact the application administrator.
+    </footer>
+  </div>
+</body>
+</html>

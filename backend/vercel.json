@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "crons": [
+    { "path": "/api/v1/stock/low-stock-alert/cron", "schedule": "0 0 * * *" },
+    { "path": "/api/v1/generated-documents/monthly/cron", "schedule": "0 0 1 * *" },
+    { "path": "/api/v1/generated-documents/expired/cron", "schedule": "0 1 * * *" }
+  ]
+}
