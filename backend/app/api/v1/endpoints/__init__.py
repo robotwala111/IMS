@@ -1,0 +1,43 @@
+"""API v1 endpoints module."""
+
+from app.api.v1.endpoints import (
+    auth,
+    users,
+    locations,
+    categories,
+    items,
+    stock,
+    transactions,
+    transfers,
+    assets,
+    calibration,
+    maintenance,
+    attachments,
+    dashboard,
+    reports,
+    notifications,
+    audit,
+    employee_records,
+    employees,
+)
+
+__all__ = [
+    "auth",
+    "users",
+    "locations",
+    "categories",
+    "items",
+    "stock",
+    "transactions",
+    "transfers",
+    "assets",
+    "calibration",
+    "maintenance",
+    "attachments",
+    "dashboard",
+    "reports",
+    "notifications",
+    "audit",
+    "employee_records",
+    "employees",
+]
