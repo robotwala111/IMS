@@ -1,0 +1,101 @@
+# ==============================================================================
+# ScienceTech-IMS — Git Ignore
+# ==============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+*.whl
+venv/
+.venv/
+env/
+.python-version
+
+# --- Database ---
+*.db
+*.db-journal
+*.sqlite3
+
+# --- Build Outputs ---
+dist/
+build/
+.next/
+public/
+*.egg-info/
+
+# --- Data (local storage) ---
+data/files/*
+data/logs/*
+backend/data/files/*
+backend/data/logs/*
+!data/.gitkeep
+!data/files/.gitkeep
+!data/logs/.gitkeep
+
+# --- Environment Files ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Testing & Coverage ---
+.coverage
+coverage/
+htmlcov/
+.nyc_output/
+.pytest_cache/
+junit.xml
+coverage.xml
+
+# --- Type Checking & Linting ---
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# --- SSL Certificates ---
+nginx/ssl/
+
+# --- Diagnostic scripts (development only) ---
+backend/analyze_*.py
+backend/check_*.py
+backend/diagnose_*.py
+backend/test_*.py
+playwright-report/
+test-results/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+*.tsbuildinfo
+.eslintcache
+*.pid
+*.seed
+*.pid.lock
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+.vercel
+.env*
+!.env.example
