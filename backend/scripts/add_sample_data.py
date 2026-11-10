@@ -81,7 +81,7 @@ async def add_transactions(db, locations, items, users):
             quantity=-5, unit_cost=float(consumables[0].standard_cost or 350),
             total_cost=5 * float(consumables[0].standard_cost or 350),
             reference_number="TXN-2026-0003",
-            reason="Issued to field team — Tata Steel inspection",
+            reason="Issued to synthetic demo inspection project",
             created_by_id=admin.id, transaction_date=now - timedelta(days=3),
         ),
         Transaction(
@@ -91,7 +91,7 @@ async def add_transactions(db, locations, items, users):
             quantity=-3, unit_cost=float((consumables[1] if len(consumables) > 1 else consumables[0]).standard_cost or 950),
             total_cost=3 * float((consumables[1] if len(consumables) > 1 else consumables[0]).standard_cost or 950),
             reference_number="TXN-2026-0004",
-            reason="Issued for BHEL Trichy PT inspection",
+            reason="Issued for synthetic demo surface inspection",
             created_by_id=admin.id, transaction_date=now - timedelta(days=2),
         ),
         # Return
@@ -274,7 +274,7 @@ async def add_transfers_with_pi(db, locations, items, users):
             status=TransferStatus.APPROVED,
             transfer_items=[(penetrant, 6), (ipa, 10)],
             days_ago=3, transfer_type="consumable",
-            notes="PT consumables restocking — BHEL Trichy project",
+            notes="PT consumables restocking for the synthetic demo project",
         )
 
     if couplant and ipa:
@@ -284,7 +284,7 @@ async def add_transfers_with_pi(db, locations, items, users):
             status=TransferStatus.RECEIVED,
             transfer_items=[(couplant, 5), (ipa, 5)],
             days_ago=7, transfer_type="consumable",
-            notes="Consumables sent to Hyderabad for pipeline job",
+            notes="Consumables sent to the regional demo inspection team",
         )
 
     # -----------------------------------------------------------------------
@@ -409,8 +409,8 @@ async def add_calibration_records(db, users):
     admin = users[0]
     now = datetime.now(timezone.utc)
     cal_labs = [
-        "NDT Calibration Services Pvt Ltd, Bangalore",
-        "Internal Calibration Lab",
+        "Amiro Demo Calibration Lab",
+        "Amiro In-House Verification Unit",
     ]
 
     count = 0

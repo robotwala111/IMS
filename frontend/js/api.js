@@ -285,6 +285,28 @@ const API = {
 
 // Auth API
 const AuthAPI = {
+    async demoLogin() {
+        const response = await API._fetch(`${API_BASE_URL}/auth/demo-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+        });
+
+        if (!response.ok) {
+            let message = 'The demo is temporarily unavailable';
+            try {
+                const body = await response.json();
+                message = body.error?.message || body.detail || message;
+            } catch (_) { /* response not JSON */ }
+            throw new Error(message);
+        }
+
+        const data = await response.json();
+        TokenStorage.setTokens(data.access_token, data.refresh_token);
+        TokenStorage.setUser(data.user);
+        return data.user;
+    },
+
     async login(email, password) {
         const response = await API._fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
