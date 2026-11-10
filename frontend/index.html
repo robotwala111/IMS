@@ -3,19 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Scientech-IMS — Enterprise Inventory Management System for NDT Equipment">
-    <meta name="theme-color" content="#0052CC">
+    <meta name="description" content="Amiro Tech Solutions — Enterprise Operations">
+    <meta name="theme-color" content="#f4b000">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
-    <title>Scientech-IMS — Inventory Management System</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230052CC'/%3E%3Cpath d='M19 18h26v7H27v6h16v7H27v8h18v7H19z' fill='white'/%3E%3C/svg%3E">
+    <title>Amiro Tech Solutions — Inventory Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='none'%3E%3Cg transform='translate(-11.38 25.2) scale(1.18)'%3E%3Cpath d='M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z' fill='%23F4B400'/%3E%3Cpath d='M98 8L146 92H120L85 31L98 8Z' fill='%232A2C31'/%3E%3Cpath d='M92 64L108 92H135L119 64H92Z' fill='%232A2C31'/%3E%3Cpath d='M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z' fill='%23F8F8F8'/%3E%3C/g%3E%3C/svg%3E">
     <link rel="stylesheet" href="css/enterprise.css?v=20260419-02">
-    <link rel="stylesheet" href="css/styles.css?v=20260730-01">
+    <link rel="stylesheet" href="css/styles.css?v=20261110-booking-submit-fix-v7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            try {
+                var search = window.location.search;
+                if (search && (search.indexOf('demo=1') !== -1 || new URLSearchParams(search).get('demo') === '1')) {
+                    document.documentElement.classList.add('demo-loading');
+                }
+            } catch (_) {}
+        })();
+    </script>
+    <style>
+        html.demo-loading #login-page {
+            display: none !important;
+        }
+        #demo-loading-splash {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0b1120;
+            color: #ffffff;
+            z-index: 999999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        html.demo-loading #demo-loading-splash {
+            display: flex !important;
+        }
+    </style>
 </head>
 <body>
+    <div id="demo-loading-splash" aria-live="polite" aria-busy="true">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:24px;color:#f4b000;"></i>
+            <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em;">Opening Amiro IMS Demo...</span>
+        </div>
+        <p style="font-size:13px;color:#94a3b8;margin:0;">Launching enterprise workspace without credentials</p>
+    </div>
     <div id="app">
         <!-- Login Page -->
         <div id="login-page" class="login-page">
@@ -27,14 +65,21 @@
             <div class="login-card">
                 <div class="login-brand">
                     <div class="login-brand-icon">
-                        <img id="login-brand-logo" class="brand-logo-img hidden" alt="Scientech logo">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        <svg class="brand-logo-img amiro-wordmark-inline" width="520" height="150" viewBox="0 0 520 150" role="img" aria-label="Amiro Tech Solutions logo" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(24 12)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                            <g transform="translate(184 42)" fill="#F8F8F8" font-family="Inter, Segoe UI, Arial, sans-serif">
+                                <text x="0" y="42" font-size="46" font-weight="800" letter-spacing="-1.2">Amiro Tech</text>
+                                <text x="76" y="92" font-size="26" font-weight="500" letter-spacing="9">SOLUTIONS</text>
+                            </g>
                         </svg>
                     </div>
-                    <h1 class="login-brand-name">Scientech<span>IMS</span></h1>
-                    <p class="login-brand-tagline">Inventory Management System</p>
+                    <h1 class="login-brand-name sr-only">Amiro Tech Solutions</h1>
+                    <p class="login-brand-tagline">Enterprise Operations</p>
                 </div>
 
                 <form id="login-form" class="login-form" method="post" autocomplete="on" onsubmit="return false;">
@@ -138,9 +183,32 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <img id="sidebar-brand-logo" class="sidebar-brand-logo hidden" alt="Scientech logo">
-                    <i class="fas fa-warehouse"></i>
-                    <span>Scientech-IMS</span>
+                    <div class="sidebar-brand-lockup">
+                        <svg class="sidebar-brand-logo sidebar-brand-logo--wordmark" width="520" height="150" viewBox="0 0 520 150" role="img" aria-label="Amiro Tech Solutions logo" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(24 12)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                            <g transform="translate(184 42)" fill="#F8F8F8" font-family="Inter, Segoe UI, Arial, sans-serif">
+                                <text x="0" y="42" font-size="46" font-weight="800" letter-spacing="-1.2">Amiro Tech</text>
+                                <text x="76" y="92" font-size="26" font-weight="500" letter-spacing="9">SOLUTIONS</text>
+                            </g>
+                        </svg>
+                        <svg class="sidebar-brand-logo sidebar-brand-logo--mark" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Amiro Tech Solutions mark" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(-11.38 25.2) scale(1.18)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                        </svg>
+                        <span class="sidebar-brand-tagline">Inventory Management</span>
+                    </div>
+                    <button id="sidebar-toggle" class="sidebar-collapse-toggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                 </div>
                 <nav class="sidebar-nav">
                     <span class="sidebar-section-label">Overview</span>
@@ -200,15 +268,14 @@
             <main class="main-content">
                 <header class="top-header">
                     <div class="header-left">
-                        <button id="sidebar-toggle" class="btn-icon">
-                            <i class="fas fa-bars"></i>
-                        </button>
+                        <button class="dashboard-top-menu" type="button" aria-label="Toggle sidebar" onclick="document.getElementById('sidebar-toggle').click()"><i class="fas fa-bars"></i></button>
                         <h2 id="page-title">Dashboard</h2>
                     </div>
                     <div class="header-right">
                         <div class="header-search">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="global-search" placeholder="Search across modules..." autocomplete="off">
+                            <input type="text" id="global-search" aria-label="Open quick search" title="Quick search (Ctrl+K)" placeholder="Search across modules..." autocomplete="off" readonly aria-haspopup="dialog">
+                            <kbd class="quick-search-shortcut">Ctrl K</kbd>
                         </div>
                         <div class="header-notification">
                             <button class="btn-icon" title="Notifications" id="notifications-btn" onclick="toggleNotificationsPanel()">
@@ -238,6 +305,7 @@
                             <i class="fas fa-moon" id="dark-mode-icon"></i>
                         </button>
                         <div class="user-info">
+                            <span id="demo-mode-pill" class="demo-mode-pill" hidden>Demo</span>
                             <div class="user-avatar" id="user-avatar">A</div>
                             <span id="user-name">Admin</span>
                             <span id="user-role" class="badge">Admin</span>
@@ -252,12 +320,24 @@
                         <div class="dashboard-welcome">
                             <div class="welcome-text">
                                 <h2 id="welcome-greeting">Welcome back</h2>
+                                <p class="welcome-subtitle">Here’s your business overview for today.</p>
                                 <p id="welcome-date"></p>
                             </div>
                             <div class="welcome-actions">
+                                <span class="system-active-pill"><i class="fas fa-circle"></i> System Active</span>
                                 <button class="btn btn-outline btn-sm" onclick="loadDashboard()">
                                     <i class="fas fa-sync-alt"></i> Refresh
                                 </button>
+                            </div>
+                            <div class="welcome-illustration" aria-hidden="true">
+                                <svg viewBox="0 0 250 150" role="presentation">
+                                    <path d="M0 125 C48 78 78 150 128 96 S197 68 250 22 V150 H0Z" fill="rgba(63,126,231,.2)"/>
+                                    <rect x="66" y="29" width="138" height="96" rx="13" fill="#f8fbff" stroke="#dce8ff" stroke-width="5" transform="rotate(-5 135 77)"/>
+                                    <path d="M91 103V87h13v16m9 0V71h13v32m9 0V58h13v45m9 0V77h13v26" fill="#6b9cf6" transform="rotate(-5 135 77)"/>
+                                    <path d="m93 72 24-14 17 7 28-20" fill="none" stroke="#f4b000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle cx="188" cy="112" r="22" fill="#19b985" stroke="#b8f0df" stroke-width="5"/>
+                                    <path d="m178 112 7 7 14-16" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             </div>
                         </div>
 
@@ -265,10 +345,10 @@
                         <div class="stats-grid">
                             <div class="stat-card clickable stat-purple" onclick="showAssetsDetails()" title="Click to view serialized products">
                                 <div class="stat-icon bg-purple">
-                                    <i class="fas fa-tools"></i>
+                                    <i class="fas fa-cube"></i>
                                 </div>
                                 <div class="stat-info">
-                                    <p>Equipment / Instruments</p>
+                                    <p>Total Equipment</p>
                                     <h3 id="total-assets">0</h3>
                                     <span class="stat-subtitle">Serialized products</span>
                                 </div>
@@ -279,7 +359,7 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                 </div>
                                 <div class="stat-info">
-                                    <p>Locations</p>
+                                    <p>Active Locations</p>
                                     <h3 id="total-locations">0</h3>
                                     <span class="stat-subtitle">Active sites</span>
                                 </div>
@@ -290,88 +370,63 @@
                                     <i class="fas fa-exclamation-triangle"></i>
                                 </div>
                                 <div class="stat-info">
-                                    <p>Low Stock</p>
+                                    <p>Low Stock Items</p>
                                     <h3 id="low-stock-count">0</h3>
-                                    <span class="stat-subtitle">Items below reorder</span>
+                                    <span class="stat-subtitle" id="low-stock-subtitle">Items below reorder</span>
                                 </div>
                                 <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
                             </div>
                             <div class="stat-card clickable stat-red" onclick="showCalibrationDetails()" title="Click to view calibration alerts">
                                 <div class="stat-icon bg-red">
-                                    <i class="fas fa-certificate"></i>
+                                    <i class="fas fa-calendar-check"></i>
                                 </div>
                                 <div class="stat-info">
-                                    <p>Calibration</p>
+                                    <p>Calibration Due</p>
                                     <h3 id="calibration-count">0</h3>
-                                    <span class="stat-subtitle">Due / Expired</span>
+                                    <span class="stat-subtitle" id="calibration-subtitle">Due / Expired</span>
                                 </div>
                                 <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
                             </div>
 
                         </div>
 
-                        <!-- Two Column: Low Stock + Calibration -->
-                        <div class="dashboard-two-col">
-                            <div class="card dash-card">
+                        <div class="reference-dashboard-row reference-dashboard-top">
+                            <div class="card dash-card reference-alert-card">
                                 <div class="card-header">
-                                    <h3><i class="fas fa-exclamation-triangle text-warning"></i> Low Stock Alerts</h3>
-                                    <button class="btn btn-sm btn-outline" onclick="showLowStockDetails()">View All</button>
+                                    <h3><i class="fas fa-bell text-warning"></i> Alerts &amp; Notifications</h3>
+                                    <button class="btn btn-sm btn-link" onclick="showLowStockDetails()">View All →</button>
                                 </div>
-                                <div class="card-body card-body-scroll">
-                                    <div id="low-stock-alerts">
-                                        <p class="text-muted">Loading...</p>
+                                <div class="card-body reference-alert-body">
+                                    <div class="reference-alert-block">
+                                        <div id="low-stock-alerts"><p class="text-muted">Loading...</p></div>
+                                    </div>
+                                    <div class="reference-alert-block calibration-alert-block">
+                                        <div id="calibration-alerts"><p class="text-muted">Loading...</p></div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="card dash-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-certificate text-danger"></i> Calibration Alerts</h3>
-                                    <button class="btn btn-sm btn-outline" onclick="showCalibrationDetails()">View All</button>
-                                </div>
-                                <div class="card-body card-body-scroll">
-                                    <div id="calibration-alerts">
-                                        <p class="text-muted">Loading...</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Recent Activity Feed -->
-                        <div class="card dash-card" style="margin-bottom: 20px;">
-                            <div class="card-header">
-                                <h3><i class="fas fa-clipboard-list text-primary"></i> Recent Activity</h3>
-                            </div>
-                            <div class="card-body card-body-scroll">
-                                <div id="recent-activity-feed">
-                                    <p class="text-muted">Loading...</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Analytics Charts Row -->
-                        <div class="dashboard-two-col" style="margin-bottom:20px;">
-                            <div class="card dash-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-chart-pie text-primary"></i> Stock by Category</h3>
-                                </div>
-                                <div class="card-body" style="position:relative;height:260px;display:flex;align-items:center;justify-content:center;">
+                            <div class="card dash-card reference-chart-card">
+                                <div class="card-header"><h3><i class="fas fa-chart-pie text-primary"></i> Stock by Category</h3></div>
+                                <div class="card-body reference-chart-body">
                                     <canvas id="stock-category-chart"></canvas>
                                     <div id="stock-category-chart-empty" class="text-muted" style="display:none;">No category data available</div>
                                 </div>
                             </div>
-                            <div class="card dash-card">
-                                <div class="card-header">
-                                    <h3><i class="fas fa-chart-bar text-success"></i> Stock Movement (Last 7 Days)</h3>
-                                </div>
-                                <div class="card-body" style="position:relative;height:260px;display:flex;align-items:center;justify-content:center;">
+                            <div class="card dash-card reference-chart-card reference-movement-card">
+                                <div class="card-header"><h3><i class="fas fa-chart-bar text-primary"></i> Stock Movement</h3><span class="chart-period-pill">7D</span></div>
+                                <div class="card-body reference-chart-body">
                                     <canvas id="stock-movement-chart"></canvas>
                                     <div id="stock-movement-chart-empty" class="text-muted" style="display:none;">No movement data available</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Location-wise Stock Summary -->
-                        <div class="card location-stock-section">
+                        <div class="reference-dashboard-row reference-dashboard-bottom">
+                        <div class="card dash-card reference-activity-card">
+                            <div class="card-header"><h3><i class="fas fa-clock text-primary"></i> Recent Activity</h3><button class="btn btn-sm btn-link" onclick="navigateTo('logs')">View All →</button></div>
+                            <div class="card-body card-body-scroll"><div id="recent-activity-feed"><p class="text-muted">Loading...</p></div></div>
+                        </div>
+                        <div class="card location-stock-section dash-card reference-location-card">
                             <div class="card-header">
                                 <h3><i class="fas fa-warehouse"></i> Location-wise Stock Summary</h3>
                                 <div class="header-actions">
@@ -401,18 +456,25 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Location Cards Grid -->
-                                <div class="locations-grid" id="dashboard-locations-grid">
-                                    <p class="text-muted">Loading location data...</p>
+                                <div class="reference-location-table-wrap">
+                                  <table class="reference-location-table">
+                                    <thead><tr><th>Location</th><th>Total Stock</th><th>Received</th><th>Issued</th><th>Available</th><th>Adjusted</th></tr></thead>
+                                    <tbody id="dashboard-location-table-body"><tr><td colspan="6" class="text-muted">Loading location data...</td></tr></tbody>
+                                  </table>
                                 </div>
+                                <div class="locations-grid" id="dashboard-locations-grid" style="display:none"></div>
                             </div>
+                        </div>
                         </div>
                     </section>
 
                     <!-- Products Section -->
                     <section id="items-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Products</h3>
+                            <div class="products-heading-copy">
+                                <h3>Products</h3>
+                                <p>Manage equipment, instruments, and calibration records.</p>
+                            </div>
                             <div class="section-header-actions">
                                 <span id="products-count" class="record-count"></span>
                                 <button class="btn btn-outline" onclick="showCalibrationSupplierTransactionModal()">
@@ -447,7 +509,7 @@
                                 <option value="calibration">Requires Calibration</option>
                             </select>
                         </div>
-                        <div class="card">
+                        <div class="card products-table-card">
                             <div class="card-body">
                                 <div class="table-container">
                                     <table class="data-table" id="products-table">
@@ -500,7 +562,10 @@
                     <!-- Stock Section -->
                     <section id="stock-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Stock Levels</h3>
+                            <div class="stock-heading-copy">
+                                <h3>Stock Levels</h3>
+                                <p>Track stock balances and movement across your locations.</p>
+                            </div>
                             <div class="header-actions">
                                 <select id="stock-location-filter" class="form-select" onchange="loadStockByLocation()">
                                     <option value="">All Locations</option>
@@ -534,7 +599,7 @@
                             </button>
                         </div>
                         <!-- Stock Search & Filter Toolbar -->
-                        <div class="filter-toolbar">
+                        <div class="filter-toolbar stock-filter-toolbar">
                             <div class="toolbar-search">
                                 <i class="fas fa-search"></i>
                                 <input type="text" id="stock-search" placeholder="Search by product name, code, make, model or category..." oninput="filterStock()">
@@ -573,7 +638,7 @@
                             </div>
                         </div>
                         
-                        <div class="card">
+                        <div class="card stock-table-card">
                             <div class="card-body">
                                 <div class="table-container">
                                     <table class="data-table" id="stock-table">
@@ -647,7 +712,7 @@
                     <!-- Locations Section -->
                     <section id="locations-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Locations</h3>
+                            <div class="module-heading-copy"><h3>Locations</h3><p>Manage operating sites and location details.</p></div>
                             <button class="btn btn-primary" onclick="showAddLocationModal()">
                                 <i class="fas fa-plus"></i> Add Location
                             </button>
@@ -666,7 +731,7 @@
                     <!-- Categories Section -->
                     <section id="categories-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Categories</h3>
+                            <div class="module-heading-copy"><h3>Categories</h3><p>Organize products by type and stock handling.</p></div>
                             <button class="btn btn-primary" onclick="showAddCategoryModal()">
                                 <i class="fas fa-plus"></i> Add Category
                             </button>
@@ -713,7 +778,7 @@
                     <!-- Transfers Section -->
                     <section id="transfers-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Transfers</h3>
+                            <div class="module-heading-copy"><h3>Transfers</h3><p>Track stock requests and movement between locations.</p></div>
                             <div class="header-actions">
                                 <button class="btn btn-outline" onclick="refreshTransfersSection()">
                                     <i class="fas fa-sync"></i> Refresh
@@ -884,7 +949,7 @@
                     <!-- Equipment Compliance Section -->
                     <section id="compliance-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Equipment Compliance</h3>
+                            <div class="module-heading-copy"><h3>Equipment Compliance</h3><p>Review equipment status, calibration, and service history.</p></div>
                             <div class="header-actions">
                                 <button class="btn btn-secondary" onclick="exportComplianceCSV()">
                                     <i class="fas fa-download"></i> Export CSV
@@ -1093,7 +1158,7 @@
                     <!-- Log Management Section -->
                     <section id="logs-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>Log Management</h3>
+                            <div class="module-heading-copy"><h3>Log Management</h3><p>Review system activity and changes across the inventory.</p></div>
                             <div class="header-actions">
                                 <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('logs-data-table', 'audit-logs.csv')" title="Export current view to CSV">
                                     <i class="fas fa-download"></i> Export CSV
@@ -1159,7 +1224,7 @@
                     <!-- Users Section -->
                     <section id="users-section" class="content-section hidden">
                         <div class="section-header">
-                            <h3>User Management</h3>
+                            <div class="module-heading-copy"><h3>User Management</h3><p>Manage accounts, roles, and access to the system.</p></div>
                             <button class="btn btn-primary" onclick="showAddUserModal()">
                                 <i class="fas fa-plus"></i> Add User
                             </button>
@@ -1174,6 +1239,7 @@
                                 <option value="admin">Admin</option>
                                 <option value="head_office_manager">General Manager</option>
                                 <option value="location_manager">Location Manager</option>
+                                <option value="demo_user">Demo User</option>
                             </select>
                             <select id="users-status-filter" onchange="filterUsers()">
                                 <option value="">All Status</option>
@@ -1294,8 +1360,152 @@
                         </div>
                     </section>
                 </div>
+                <div class="amiro-ai-root">
+                    <button id="amiro-ai-launch" class="amiro-ai-launch" type="button" aria-label="Open Amiro Intelligence" aria-expanded="false" title="Amiro Intelligence">
+                        <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    </button>
+                    <section id="amiro-ai-panel" class="amiro-ai-panel hidden" role="dialog" aria-modal="false" aria-labelledby="amiro-ai-title">
+                        <header class="amiro-ai-header">
+                            <div class="amiro-ai-brand-icon"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></div>
+                            <div class="amiro-ai-brand-copy"><strong id="amiro-ai-title">Amiro Intelligence</strong><span>Your Amiro IMS assistant</span></div>
+                            <span class="amiro-ai-language">ENGLISH</span>
+                            <button type="button" class="amiro-ai-header-btn" onclick="resetAmiroAssistant()" title="New conversation" aria-label="New conversation"><i class="fas fa-rotate-left"></i></button>
+                            <button type="button" class="amiro-ai-header-btn" onclick="minimizeAmiroAssistant()" title="Minimize" aria-label="Minimize assistant"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="amiro-ai-header-btn" onclick="closeAmiroAssistant()" title="Close" aria-label="Close assistant"><i class="fas fa-times"></i></button>
+                        </header>
+                        <div id="amiro-ai-welcome" class="amiro-ai-welcome">
+                            <div class="amiro-ai-welcome-icon"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></div>
+                            <h2>Hello! Welcome.</h2>
+                            <p>I’m your Amiro IMS assistant. How can I help you today?</p>
+                            <small>Ask in English about products, stock, locations, transfers, or compliance.</small>
+                            <div class="amiro-ai-suggestions-heading">SUGGESTED QUESTIONS</div>
+                            <div class="amiro-ai-suggestions">
+                                <button type="button" data-amiro-question="What does this dashboard show?">📊 <span>What does this dashboard show?</span></button>
+                                <button type="button" data-amiro-question="Are any items low in stock?">⚠️ <span>Are any items low in stock?</span></button>
+                                <button type="button" data-amiro-question="Which calibrations are due?">🧰 <span>Which calibrations are due?</span></button>
+                                <button type="button" data-amiro-question="How do I add a product?">📦 <span>How do I add a product?</span></button>
+                                <button type="button" data-amiro-question="Show recent stock activity">📈 <span>Show recent stock activity</span></button>
+                                <button type="button" data-amiro-question="How do I request a transfer?">🚚 <span>How do I request a transfer?</span></button>
+                            </div>
+                        </div>
+                        <div id="amiro-ai-messages" class="amiro-ai-messages hidden" role="log" aria-live="polite" aria-relevant="additions"></div>
+                        <form id="amiro-ai-form" class="amiro-ai-composer">
+                            <textarea id="amiro-ai-input" rows="1" maxlength="600" placeholder="Ask Amiro Intelligence about your IMS…" aria-label="Ask Amiro Intelligence"></textarea>
+                            <button id="amiro-ai-send" type="submit" aria-label="Send question" title="Send"><i class="fas fa-paper-plane"></i></button>
+                            <div class="amiro-ai-composer-hint"><span><kbd>Enter</kbd> to send · <kbd>Shift + Enter</kbd> for a new line</span><span>Amiro IMS · English only</span></div>
+                        </form>
+                    </section>
+                </div>
             </main>
         </div>
+    </div>
+
+    <!-- Quick Search Command Palette -->
+    <div id="quick-search-overlay" class="quick-search-overlay hidden">
+        <div class="quick-search-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-search-title">
+            <div class="quick-search-top">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span id="quick-search-title" class="hidden">Quick Search</span>
+                <input id="quick-search-command-input" type="search" placeholder="Type a command, module, or route..." autocomplete="off" spellcheck="false">
+                <kbd>ESC</kbd>
+            </div>
+            <div id="quick-search-results" class="quick-search-results" role="listbox" aria-label="Quick search actions"></div>
+            <div class="quick-search-footer">
+                <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                <span><kbd>↵</kbd> to select</span>
+                <span><kbd>ESC</kbd> to dismiss</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locked module enquiry form -->
+    <div id="contract-request-overlay" class="contract-request-overlay hidden">
+        <section class="contract-request-dialog" role="dialog" aria-modal="true" aria-labelledby="contract-request-title">
+            <button class="contract-request-close" type="button" onclick="closeContractRequestModal()" aria-label="Close request form">&times;</button>
+            <div class="contract-request-heading-icon"><i class="fas fa-lock"></i></div>
+            <p class="contract-request-eyebrow">AMIRO TECH SOLUTIONS</p>
+            <h2 id="contract-request-title">Unlock more for your team</h2>
+            <p class="contract-request-intro">Choose an appointment time. The Amiro team will follow up.</p>
+            <form id="contract-request-form">
+                <input type="hidden" name="requested_module" id="contract-request-module">
+                <div class="contract-request-fields">
+                    <div class="contract-request-calendar">
+                        <div class="contract-calendar-header">
+                            <div class="contract-calendar-title-wrap">
+                                <span class="contract-calendar-icon"><i class="fas fa-calendar-alt"></i></span>
+                                <div>
+                                    <strong class="contract-calendar-title">Select Appointment</strong>
+                                    <p class="contract-calendar-subtitle">Live availability · 30-min product walkthrough</p>
+                                </div>
+                            </div>
+                            <div class="contract-calendar-badges">
+                                <span class="calendar-pill"><i class="far fa-clock"></i> 30 mins</span>
+                                <span class="calendar-pill"><i class="fas fa-video"></i> Google Meet</span>
+                            </div>
+                        </div>
+
+                        <!-- Date Selection Strip -->
+                        <div class="contract-date-picker-wrap">
+                            <div class="contract-section-header">
+                                <span class="contract-section-title"><i class="far fa-calendar-check"></i> 1. Choose Date</span>
+                                <div class="contract-custom-date-wrap">
+                                    <button type="button" class="contract-custom-date-btn" id="contract-custom-date-btn" title="Open calendar to choose any date">
+                                        <i class="far fa-calendar-alt"></i>
+                                        <span id="contract-custom-date-label">Full Calendar</span>
+                                        <i class="fas fa-chevron-down cal-dropdown-chevron"></i>
+                                    </button>
+                                    <input id="contract-demo-date" name="demo_date" type="hidden">
+
+                                    <!-- Interactive Monthly Calendar Dropdown -->
+                                    <div id="contract-calendar-popover" class="contract-calendar-popover hidden" role="dialog" aria-label="Interactive demo calendar">
+                                        <div class="cal-popover-header">
+                                            <button type="button" class="cal-nav-btn" id="cal-prev-month" aria-label="Previous month">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <span class="cal-month-title" id="cal-month-title">November 2026</span>
+                                            <button type="button" class="cal-nav-btn" id="cal-next-month" aria-label="Next month">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                        <div class="cal-weekdays-row">
+                                            <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+                                        </div>
+                                        <div class="cal-days-grid" id="cal-days-grid">
+                                            <!-- Dynamically generated by app.js -->
+                                        </div>
+                                        <div class="cal-popover-footer">
+                                            <span class="cal-footer-hint"><i class="fas fa-check-circle"></i> Open 7 days a week (Mon–Sun) &middot; Up to 90 days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="contract-quick-dates" class="contract-quick-dates" role="radiogroup" aria-label="Quick date selection">
+                                <!-- Populated dynamically by app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Time Slot Selection Grid -->
+                        <div class="contract-time-picker-wrap">
+                            <div class="contract-section-header">
+                                <span class="contract-section-title"><i class="far fa-clock"></i> 2. Available Timings</span>
+                                <span id="contract-slots-count" class="contract-slots-meta">Select a date</span>
+                            </div>
+                            <input type="hidden" name="start_at" id="contract-demo-time">
+                            <div id="contract-time-slots-grid" class="contract-time-slots-grid" role="radiogroup" aria-label="Available appointment times">
+                                <div class="contract-slots-placeholder">Select a date to view available times</div>
+                            </div>
+                        </div>
+
+                        <p id="contract-demo-calendar-status" class="contract-demo-calendar-status" aria-live="polite">Select a date to see available appointment times.</p>
+                    </div>
+                    <label class="contract-request-message">What are your requirements?<textarea name="message" rows="3" maxlength="1200" placeholder="Tell us what you need, which modules interest you, or any questions for our team"></textarea></label>
+                    <label class="contract-request-honeypot" aria-hidden="true">Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label>
+                </div>
+                <p class="contract-request-pending"><i class="fas fa-info-circle"></i> Google Calendar sends the invitation to you. Your details and Meet link are emailed to Amiro only.</p>
+                <p id="contract-demo-booking-status" class="contract-demo-booking-status" aria-live="polite"></p>
+                <button id="contract-request-submit" class="contract-request-submit" type="submit" disabled>Request access and book appointment</button>
+            </form>
+        </section>
     </div>
 
     <!-- Modal Container -->
@@ -1316,8 +1526,8 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <script src="js/config.js?v=20260730-06"></script>
-    <script src="js/api.js?v=20260815-08"></script>
-    <script src="js/app.js?v=20260815-08"></script>
+    <script src="js/config.js?v=20261110-booking-submit-fix-v7"></script>
+    <script src="js/api.js?v=20261110-booking-submit-fix-v7"></script>
+    <script src="js/app.js?v=20261110-booking-submit-fix-v7"></script>
 </body>
 </html>

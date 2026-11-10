@@ -153,6 +153,33 @@ async def login(
     )
 
 
+@router.post("/demo-login", response_model=LoginResponse)
+async def demo_login(db: DB) -> LoginResponse:
+    """Start a restricted session for the configured demo account."""
+    user = await UserService(db).get_by_email(settings.DEMO_USER_EMAIL)
+    if not user or not user.is_active or user.role != UserRole.DEMO_USER:
+        raise AuthenticationError(message="The demo account is unavailable")
+
+    previous_login_at = user.last_login_at
+    await UserService(db).update_last_login(user.id)
+    access_token, refresh_token = await AuthTokenService(db).create_session(user)
+
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=UserBasicInfo(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            role=user.role,
+            assigned_location_ids=[loc.id for loc in user.assigned_locations],
+            last_login_at=previous_login_at,
+        ),
+    )
+
+
 @router.post("/refresh", response_model=TokenRefreshResponse)
 async def refresh_token(
     request: TokenRefreshRequest,

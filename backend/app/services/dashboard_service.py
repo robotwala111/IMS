@@ -81,6 +81,7 @@ class DashboardService:
             .where(
                 and_(
                     Item.is_active == True,
+                    Item.is_serialized == False,
                     Stock.quantity_on_hand > 0,
                     Stock.quantity_on_hand <= Stock.reorder_point,
                 )
@@ -95,7 +96,7 @@ class DashboardService:
         out_of_stock_query = (
             select(func.count(Stock.id))
             .join(Item, Item.id == Stock.item_id)
-            .where(Item.is_active == True, Stock.quantity_on_hand <= 0)
+            .where(Item.is_active == True, Item.is_serialized == False, Stock.quantity_on_hand <= 0)
         )
         if location_ids is not None:
             out_of_stock_query = out_of_stock_query.where(Stock.location_id.in_(location_ids))
@@ -365,6 +366,7 @@ class DashboardService:
             .outerjoin(Category, Category.id == Item.category_id)
             .where(
                 and_(
+                    Item.is_serialized == False,
                     Stock.quantity_on_hand > 0,
                     Stock.quantity_on_hand <= Stock.reorder_point,
                     Stock.reorder_point > 0,

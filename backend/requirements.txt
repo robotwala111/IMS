@@ -9,6 +9,7 @@ uvicorn[standard]>=0.27.0
 
 # --- Database ---
 sqlalchemy>=2.0.25
+greenlet>=3.0.0
 alembic>=1.13.1
 aiosqlite>=0.19.0         # SQLite async driver (development)
 asyncpg>=0.29.0           # PostgreSQL async driver (production)
@@ -44,6 +45,7 @@ pillow>=12.2.0
 # --- Configuration & Logging ---
 python-dotenv>=1.0.0
 structlog>=24.1.0
+colorama>=0.4.6
 
 # --- Caching ---
 cachetools>=5.3.2

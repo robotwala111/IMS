@@ -33,7 +33,14 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
     ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1"]
-    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000",
+        "https://amirotechsolutions.com",
+        "https://www.amirotechsolutions.com",
+    ]
 
     # Server
     HOST: str = "0.0.0.0"
@@ -77,6 +84,23 @@ class Settings(BaseSettings):
     SMTP_FROM_NAME: str = "ScienceTech-IMS"
     LOW_STOCK_ALERT_EMAILS: List[str] = []
 
+    # Public demo request email (locked-module enquiry form)
+    DEMO_REQUEST_ADMIN_EMAIL: str = "amirotechsolutions.sales@gmail.com"
+    DEMO_REQUEST_EMAIL_ENABLED: bool = False
+
+    # Scheduled IMS demo (Google Calendar + Meet)
+    GOOGLE_CALENDAR_CLIENT_ID: str = ""
+    GOOGLE_CALENDAR_CLIENT_SECRET: str = ""
+    GOOGLE_CALENDAR_REFRESH_TOKEN: str = ""
+    GOOGLE_CALENDAR_ID: str = "amirotechsolutions.sales@gmail.com"
+    DEMO_BOOKING_ADMIN_EMAIL: str = "amirotechsolutions.sales@gmail.com"
+    DEMO_BOOKING_TIMEZONE: str = "Asia/Kolkata"
+    DEMO_BOOKING_START_HOUR: int = 10
+    DEMO_BOOKING_END_HOUR: int = 17
+    DEMO_BOOKING_DURATION_MINUTES: int = 30
+    DEMO_BOOKING_DAYS_AHEAD: int = 90
+    DEMO_BOOKING_EMAIL_ENABLED: bool = False
+
     # Archive & Data Retention
     ARCHIVE_RETENTION_MONTHS: int = 3
     ARCHIVE_WARNING_DAYS: int = 5
@@ -118,6 +142,7 @@ class Settings(BaseSettings):
     CREATE_DEFAULT_ADMIN: bool = False
     DEFAULT_ADMIN_EMAIL: str = "admin@ndt.com"
     DEFAULT_ADMIN_PASSWORD: str = "Admin@123"
+    DEMO_USER_EMAIL: str = "demo.amiro@gmail.com"
 
     @field_validator("CORS_ORIGINS", "ALLOWED_HOSTS", "ALLOWED_FILE_TYPES", "LOW_STOCK_ALERT_EMAILS", "ARCHIVE_RECIPIENT_EMAILS", mode="before")
     @classmethod
@@ -129,6 +154,14 @@ class Settings(BaseSettings):
                 return json.loads(v)
             except json.JSONDecodeError:
                 return [i.strip() for i in v.split(",") if i.strip()]
+        return v
+
+    @field_validator("GOOGLE_CALENDAR_REFRESH_TOKEN", "GOOGLE_CALENDAR_CLIENT_ID", "GOOGLE_CALENDAR_CLIENT_SECRET", mode="before")
+    @classmethod
+    def clean_google_creds(cls, v: str) -> str:
+        """Strip all accidental whitespace/newlines from Google OAuth credentials."""
+        if isinstance(v, str):
+            return "".join(v.split())
         return v
 
     @field_validator("DEBUG", mode="before")

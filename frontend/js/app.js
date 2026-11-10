@@ -288,12 +288,14 @@ function bindCategoryStockBehaviorHint(form) {
 const ROLE_LABELS = {
     admin: 'Admin',
     head_office_manager: 'General Manager',
-    location_manager: 'Location Manager'
+    location_manager: 'Location Manager',
+    demo_user: 'Demo User'
 };
 const ROLE_BADGES = {
     admin: 'badge-danger',
     head_office_manager: 'badge-primary',
-    location_manager: 'badge-warning'
+    location_manager: 'badge-warning',
+    demo_user: 'badge-info'
 };
 
 // HTML escape utility to prevent XSS
@@ -349,6 +351,7 @@ function getUserPermissions() {
         isAdmin: role === 'admin',
         isHOManager: role === 'head_office_manager',
         isLocationManager: role === 'location_manager',
+        isDemoUser: role === 'demo_user',
         canManage: ['admin', 'head_office_manager', 'location_manager'].includes(role),
         canManageCategories: ['admin', 'head_office_manager'].includes(role),
         canViewAllLocations: ['admin', 'head_office_manager'].includes(role),
@@ -362,8 +365,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeApp() {
     loadBranding();
+    initializeAmiroAssistant();
 
     const resetToken = new URLSearchParams(window.location.search).get('reset_token');
+    const pageParams = new URLSearchParams(window.location.search);
+    const demoModeRequested = pageParams.get('demo') === '1';
+    const demoBookingRequested = demoModeRequested && pageParams.get('booking') === '1';
+
+    // Capture incoming client details from marketing website demo request
+    const incomingClient = {
+        name: pageParams.get('name') || '',
+        email: pageParams.get('email') || '',
+        company_name: pageParams.get('company') || pageParams.get('company_name') || '',
+        company_address: pageParams.get('address') || pageParams.get('company_address') || '',
+        phone: pageParams.get('phone') || '',
+        industry: pageParams.get('industry') || '',
+        requirements: pageParams.get('requirements') || ''
+    };
+    if (incomingClient.name || incomingClient.email || incomingClient.company_name) {
+        try {
+            sessionStorage.setItem('amiro_demo_client_details', JSON.stringify(incomingClient));
+            localStorage.setItem('amiro_demo_client_details', JSON.stringify(incomingClient));
+        } catch (_) {}
+    }
 
     // Remove any credentials that may have leaked into the URL (e.g. browser autofill)
     if (window.location.search) {
@@ -371,7 +395,24 @@ function initializeApp() {
     }
 
     // Check if user is authenticated
-    if (AuthAPI.isAuthenticated()) {
+    if (demoModeRequested) {
+        TokenStorage.clearTokens();
+        AuthAPI.demoLogin().then(() => {
+            document.documentElement.classList.remove('demo-loading');
+            const splash = document.getElementById('demo-loading-splash');
+            if (splash) splash.remove();
+            showMainApp();
+            loadDashboard();
+            if (demoBookingRequested) window.setTimeout(() => openContractRequestModal('IMS Demo'), 250);
+        }).catch((error) => {
+            console.error('Demo auto-login failed:', error);
+            document.documentElement.classList.remove('demo-loading');
+            const splash = document.getElementById('demo-loading-splash');
+            if (splash) splash.remove();
+            showLoginPage();
+            showToast(error.message || 'The demo is temporarily unavailable', 'error');
+        });
+    } else if (AuthAPI.isAuthenticated()) {
         showMainApp();
         // Proactively refresh the token if it's expired or near expiry
         // before firing parallel page-load API calls
@@ -397,21 +438,14 @@ function initializeApp() {
 async function loadBranding() {
     try {
         const branding = await BrandingAPI.get();
-        const appName = branding.app_name || 'Scientech-IMS';
-        const companyName = branding.company_name || 'Scientech Services';
-        document.querySelector('.login-brand-name').innerHTML = escapeHtml(appName).replace(/IMS$/, '<span>IMS</span>');
-        document.querySelector('.sidebar-header span').textContent = appName;
+        const appName = 'Amiro Tech Solutions';
+        const companyName = 'Enterprise Operations';
+        const loginBrandName = document.querySelector('.login-brand-name');
+        if (loginBrandName) loginBrandName.textContent = appName;
+        const sidebarBrandName = document.querySelector('.sidebar-header .brand-name');
+        if (sidebarBrandName) sidebarBrandName.textContent = appName;
         const tagline = document.querySelector('.login-brand-tagline');
         if (tagline) tagline.textContent = companyName;
-        if (branding.logo_data_url) {
-            const loginLogo = document.getElementById('login-brand-logo');
-            const sidebarLogo = document.getElementById('sidebar-brand-logo');
-            [loginLogo, sidebarLogo].forEach(img => {
-                if (!img) return;
-                img.src = branding.logo_data_url;
-                img.classList.remove('hidden');
-            });
-        }
     } catch (error) {
         console.warn('Branding could not be loaded:', error);
     }
@@ -469,45 +503,674 @@ function setupEventListeners() {
     // Sidebar toggle
     document.getElementById('sidebar-toggle').addEventListener('click', () => {
         const sidebar = document.querySelector('.sidebar');
+        const toggle = document.getElementById('sidebar-toggle');
+        const icon = toggle.querySelector('i');
         if (window.innerWidth <= 768) {
-            sidebar.classList.toggle('open');
+            const isOpen = sidebar.classList.toggle('open');
+            icon.className = isOpen ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
+            toggle.setAttribute('aria-label', isOpen ? 'Close sidebar' : 'Open sidebar');
+            toggle.title = isOpen ? 'Close sidebar' : 'Open sidebar';
         } else {
-            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            icon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+            toggle.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            toggle.title = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
         }
     });
 
-    // Global search — navigate to matching module on Enter
     const globalSearch = document.getElementById('global-search');
-    if (globalSearch) {
-        globalSearch.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const q = globalSearch.value.trim().toLowerCase();
-                if (!q) return;
-                const moduleMap = {
-                    product: 'items', item: 'items', inventory: 'items',
-                    stock: 'stock', level: 'stock',
-                    location: 'locations', site: 'locations',
-                    category: 'categories',
-                    transfer: 'transfers',
-                    compliance: 'compliance', calibration: 'compliance',
-                    log: 'logs', audit: 'logs',
-                    asset: 'assets', equipment: 'assets',
-                    personal: 'personal', personnel: 'personal', employee: 'personal',
-                    job: 'jobs',
-                    user: 'users',
-                };
-                const match = Object.keys(moduleMap).find(k => q.includes(k));
-                if (match) {
-                    navigateTo(moduleMap[match]);
-                    globalSearch.value = '';
-                } else {
-                    showToast('No matching module found', 'info');
-                }
-            }
+    const quickSearchInput = document.getElementById('quick-search-command-input');
+    const quickSearchOverlay = document.getElementById('quick-search-overlay');
+    globalSearch?.addEventListener('click', openQuickSearch);
+    globalSearch?.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openQuickSearch();
+        }
+    });
+    document.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            openQuickSearch();
+        } else if (event.key === 'Escape' && quickSearchOverlay && !quickSearchOverlay.classList.contains('hidden')) {
+            closeQuickSearch();
+        } else if (event.key === 'Escape' && !document.getElementById('contract-request-overlay')?.classList.contains('hidden')) {
+            closeContractRequestModal();
+        }
+    });
+    quickSearchOverlay?.addEventListener('click', event => {
+        if (event.target === quickSearchOverlay) closeQuickSearch();
+    });
+    const contractOverlay = document.getElementById('contract-request-overlay');
+    contractOverlay?.addEventListener('click', event => {
+        if (event.target === contractOverlay) closeContractRequestModal();
+    });
+    document.getElementById('contract-request-form')?.addEventListener('submit', handleDemoBookingSubmit);
+    document.getElementById('contract-request-submit')?.addEventListener('click', handleDemoBookingSubmit);
+    initCalendarPopover();
+    const contractDemoDate = document.getElementById('contract-demo-date');
+    contractDemoDate?.addEventListener('change', loadContractDemoSlots);
+    contractDemoDate?.addEventListener('input', loadContractDemoSlots);
+    document.getElementById('contract-demo-time')?.addEventListener('change', updateDemoBookingButton);
+    document.getElementById('contract-request-form')?.addEventListener('input', updateDemoBookingButton);
+    document.getElementById('contract-request-form')?.addEventListener('change', updateDemoBookingButton);
+    quickSearchInput?.addEventListener('input', renderQuickSearchResults);
+    quickSearchInput?.addEventListener('keydown', event => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            event.stopPropagation();
+            const matches = getQuickSearchMatches(quickSearchInput.value);
+            if (!matches.length) return;
+            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            quickSearchActiveIndex = (quickSearchActiveIndex + direction + matches.length) % matches.length;
+            renderQuickSearchResults();
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            event.stopPropagation();
+            runQuickSearchCommand(quickSearchActiveIndex);
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            closeQuickSearch();
+        }
+    });
+}
+
+const QUICK_SEARCH_COMMANDS = [
+    { label: 'New Product', detail: 'Add a product to the inventory', type: 'Quick action', icon: 'fas fa-box', run: () => showAddItemModal() },
+    { label: 'Add Stock Item', detail: 'Record stock for an existing product', type: 'Quick action', icon: 'fas fa-cubes', run: () => showAddStockItemModal() },
+    { label: 'New Location', detail: 'Add an inventory site or store', type: 'Quick action', icon: 'fas fa-map-marker-alt', run: () => showAddLocationModal() },
+    { label: 'New Category', detail: 'Create a product category', type: 'Quick action', icon: 'fas fa-tags', run: () => showAddCategoryModal() },
+    { label: 'Add Personnel Record', detail: 'Record staff qualification or certification', type: 'Quick action', icon: 'fas fa-id-badge', run: () => showAddEmployeeRecordModal() },
+    { label: 'New User', detail: 'Create an application user', type: 'Quick action', icon: 'fas fa-user-plus', run: () => showAddUserModal() },
+    { label: 'Dashboard', detail: 'Overview of inventory and alerts', type: 'Navigation', page: 'dashboard', icon: 'fas fa-chart-pie', run: () => navigateTo('dashboard') },
+    { label: 'Products', detail: 'Browse and manage products', type: 'Navigation', page: 'items', icon: 'fas fa-boxes', run: () => navigateTo('items') },
+    { label: 'Stock Levels', detail: 'Review quantities and stock movements', type: 'Navigation', page: 'stock', icon: 'fas fa-cubes', run: () => navigateTo('stock') },
+    { label: 'Categories', detail: 'Browse product categories', type: 'Navigation', page: 'categories', icon: 'fas fa-tags', run: () => navigateTo('categories') },
+    { label: 'Transfers', detail: 'View inventory transfers', type: 'Navigation', page: 'transfers', icon: 'fas fa-exchange-alt', run: () => navigateTo('transfers') },
+    { label: 'Locations', detail: 'Browse inventory locations', type: 'Navigation', page: 'locations', icon: 'fas fa-map-marker-alt', run: () => navigateTo('locations') },
+    { label: 'Compliance', detail: 'Review calibration and compliance', type: 'Navigation', page: 'compliance', icon: 'fas fa-clipboard-check', run: () => navigateTo('compliance') },
+    { label: 'Personnel', detail: 'Manage staff and records', type: 'Navigation', page: 'personal', icon: 'fas fa-id-badge', run: () => navigateTo('personal') },
+    { label: 'Audit Logs', detail: 'Review recent system activity', type: 'Navigation', page: 'logs', icon: 'fas fa-clipboard-list', run: () => navigateTo('logs') },
+    { label: 'User Management', detail: 'Manage users and access', type: 'Navigation', page: 'users', icon: 'fas fa-users-cog', run: () => navigateTo('users') },
+];
+let quickSearchActiveIndex = 0;
+
+function getQuickSearchMatches(query = '') {
+    const needle = query.trim().toLowerCase();
+    const user = AuthAPI.getUser();
+    const allowedCommands = user?.role === 'demo_user'
+        ? QUICK_SEARCH_COMMANDS.filter(command => command.type === 'Navigation').map(command => ({
+            ...command,
+            isLocked: !['dashboard', 'items', 'compliance', 'users'].includes(command.page),
+            type: ['dashboard', 'items', 'compliance', 'users'].includes(command.page) ? 'Navigation' : 'Locked',
+        }))
+        : QUICK_SEARCH_COMMANDS;
+    if (!needle) return allowedCommands;
+    return allowedCommands.filter(command => `${command.label} ${command.detail} ${command.type}`.toLowerCase().includes(needle));
+}
+
+function renderQuickSearchResults() {
+    const input = document.getElementById('quick-search-command-input');
+    const results = document.getElementById('quick-search-results');
+    if (!input || !results) return;
+    const matches = getQuickSearchMatches(input.value);
+    if (!matches.length) {
+        quickSearchActiveIndex = 0;
+        results.innerHTML = '<div class="quick-search-empty">No matching actions or pages found.</div>';
+        return;
+    }
+    quickSearchActiveIndex = Math.min(quickSearchActiveIndex, matches.length - 1);
+    results.innerHTML = matches.map((command, index) => `
+        <button class="quick-search-result${index === quickSearchActiveIndex ? ' is-active' : ''}${command.isLocked ? ' is-locked' : ''}" type="button" role="option" aria-selected="${index === quickSearchActiveIndex}" data-quick-search-index="${index}">
+            <span class="quick-search-result-icon"><i class="${command.icon}" aria-hidden="true"></i></span>
+            <span class="quick-search-result-copy"><strong>${command.label}</strong><small>${command.detail}</small></span>
+            <span class="quick-search-result-type">${command.type}</span>
+        </button>`).join('');
+    results.querySelectorAll('[data-quick-search-index]').forEach(button => {
+        button.addEventListener('mouseenter', () => {
+            quickSearchActiveIndex = Number(button.dataset.quickSearchIndex);
+            results.querySelectorAll('.quick-search-result').forEach((row, index) => row.classList.toggle('is-active', index === quickSearchActiveIndex));
         });
+        button.addEventListener('click', () => runQuickSearchCommand(Number(button.dataset.quickSearchIndex)));
+    });
+}
+
+function openQuickSearch() {
+    const overlay = document.getElementById('quick-search-overlay');
+    const input = document.getElementById('quick-search-command-input');
+    if (!overlay || !input) return;
+    input.value = '';
+    quickSearchActiveIndex = 0;
+    renderQuickSearchResults();
+    overlay.classList.remove('hidden');
+    document.body.classList.add('quick-search-open');
+    requestAnimationFrame(() => input.focus());
+}
+
+function closeQuickSearch() {
+    const overlay = document.getElementById('quick-search-overlay');
+    if (!overlay || overlay.classList.contains('hidden')) return;
+    overlay.classList.add('hidden');
+    document.body.classList.remove('quick-search-open');
+    document.getElementById('global-search')?.focus();
+}
+
+function runQuickSearchCommand(index) {
+    const command = getQuickSearchMatches(document.getElementById('quick-search-command-input')?.value || '')[index];
+    if (!command) return;
+    closeQuickSearch();
+    if (command.isLocked) {
+        openContractRequestModal(command.page);
+        return;
+    }
+    command.run();
+}
+
+const DEMO_LOCKED_MODULES = {
+    stock: 'Stock Levels',
+    locations: 'Locations',
+    categories: 'Categories',
+    transfers: 'Transfers',
+    logs: 'Audit Logs',
+    personal: 'Personnel',
+};
+
+function openContractRequestModal(page) {
+    const overlay = document.getElementById('contract-request-overlay');
+    const moduleField = document.getElementById('contract-request-module');
+    if (!overlay || !moduleField) return;
+    resetContractRequestForm();
+    const moduleName = DEMO_LOCKED_MODULES[page] || page || 'additional modules';
+    moduleField.value = moduleName;
+    const heading = document.getElementById('contract-request-title');
+    if (heading) heading.textContent = `Unlock ${moduleName} for your team`;
+
+    // Pre-fill requirements if client provided them earlier
+    let savedClient = {};
+    try {
+        savedClient = JSON.parse(sessionStorage.getItem('amiro_demo_client_details') || localStorage.getItem('amiro_demo_client_details') || '{}');
+    } catch (_) {}
+    const messageField = document.querySelector('#contract-request-form [name="message"]');
+    if (messageField && !messageField.value && savedClient.requirements) {
+        messageField.value = savedClient.requirements;
+    }
+
+    overlay.classList.remove('hidden');
+    document.body.classList.add('quick-search-open');
+    requestAnimationFrame(() => document.getElementById('contract-request-overlay')?.focus());
+}
+
+function closeContractRequestModal() {
+    closeCalendarPopover();
+    document.getElementById('contract-request-overlay')?.classList.add('hidden');
+    document.body.classList.remove('quick-search-open');
+}
+
+function getAmiroCalendarDate(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+function getAmiroTomorrowDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return getAmiroCalendarDate(d);
+}
+
+function getNextBookableDemoDate() {
+    return getAmiroTomorrowDate();
+}
+
+// --- Custom Interactive Demo Calendar Popover ---
+let calViewYear = 2026;
+let calViewMonth = 10; // 0-indexed (10 = November)
+
+function initCalendarPopover() {
+    const trigger = document.getElementById('contract-custom-date-btn');
+    const prevBtn = document.getElementById('cal-prev-month');
+    const nextBtn = document.getElementById('cal-next-month');
+    const popover = document.getElementById('contract-calendar-popover');
+
+    trigger?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleCalendarPopover();
+    });
+
+    prevBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        changeCalendarMonth(-1);
+    });
+
+    nextBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        changeCalendarMonth(1);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!popover || popover.classList.contains('hidden')) return;
+        const wrap = document.querySelector('.contract-custom-date-wrap');
+        if (wrap && !wrap.contains(e.target)) {
+            closeCalendarPopover();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeCalendarPopover();
+    });
+}
+
+function toggleCalendarPopover() {
+    const popover = document.getElementById('contract-calendar-popover');
+    const trigger = document.getElementById('contract-custom-date-btn');
+    if (!popover) return;
+    const isHidden = popover.classList.contains('hidden');
+    if (isHidden) {
+        const dateInput = document.getElementById('contract-demo-date');
+        const selected = dateInput?.value || getNextBookableDemoDate();
+        const parts = selected.split('-').map(Number);
+        if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            calViewYear = parts[0];
+            calViewMonth = parts[1] - 1;
+        }
+        renderPopoverCalendar();
+        popover.classList.remove('hidden');
+        trigger?.classList.add('is-open');
+    } else {
+        closeCalendarPopover();
     }
 }
 
+function closeCalendarPopover() {
+    const popover = document.getElementById('contract-calendar-popover');
+    const trigger = document.getElementById('contract-custom-date-btn');
+    if (popover) popover.classList.add('hidden');
+    if (trigger) trigger.classList.remove('is-open');
+}
+
+function changeCalendarMonth(delta) {
+    calViewMonth += delta;
+    if (calViewMonth > 11) {
+        calViewMonth = 0;
+        calViewYear += 1;
+    } else if (calViewMonth < 0) {
+        calViewMonth = 11;
+        calViewYear -= 1;
+    }
+    renderPopoverCalendar();
+}
+
+function renderPopoverCalendar() {
+    const monthTitle = document.getElementById('cal-month-title');
+    const daysGrid = document.getElementById('cal-days-grid');
+    const prevBtn = document.getElementById('cal-prev-month');
+    const nextBtn = document.getElementById('cal-next-month');
+    const dateInput = document.getElementById('contract-demo-date');
+    if (!daysGrid || !monthTitle) return;
+
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    monthTitle.textContent = `${monthNames[calViewMonth]} ${calViewYear}`;
+
+    const todayStr = getAmiroCalendarDate();
+    const tomorrowStr = getAmiroTomorrowDate();
+    const [tY, tM] = todayStr.split('-').map(Number);
+    const minMonthIdx = tY * 12 + (tM - 1);
+    const curMonthIdx = calViewYear * 12 + calViewMonth;
+
+    if (prevBtn) {
+        const canPrev = curMonthIdx > minMonthIdx;
+        prevBtn.disabled = !canPrev;
+        prevBtn.classList.toggle('is-disabled', !canPrev);
+    }
+    if (nextBtn) {
+        const canNext = curMonthIdx < minMonthIdx + 3;
+        nextBtn.disabled = !canNext;
+        nextBtn.classList.toggle('is-disabled', !canNext);
+    }
+
+    const totalDays = new Date(Date.UTC(calViewYear, calViewMonth + 1, 0)).getUTCDate();
+    const startDayOfWeek = (new Date(Date.UTC(calViewYear, calViewMonth, 1)).getUTCDay() + 6) % 7;
+
+    const maxBookDate = new Date(`${tomorrowStr}T00:00:00Z`);
+    maxBookDate.setUTCDate(maxBookDate.getUTCDate() + 90);
+    const maxIso = maxBookDate.toISOString().slice(0, 10);
+
+    const selectedIso = dateInput?.value || '';
+
+    let html = '';
+    for (let i = 0; i < startDayOfWeek; i++) {
+        html += '<span class="cal-day-cell is-empty" aria-hidden="true"></span>';
+    }
+
+    for (let d = 1; d <= totalDays; d++) {
+        const iso = `${calViewYear}-${String(calViewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isPastOrToday = iso <= todayStr;
+        const isTooFar = iso > maxIso;
+        const isSelected = iso === selectedIso;
+
+        if (isPastOrToday) {
+            html += `<span class="cal-day-cell is-disabled" title="Same-day and past dates are unavailable">${d}</span>`;
+        } else if (isTooFar) {
+            html += `<span class="cal-day-cell is-disabled" title="Appointments available up to 90 days in advance">${d}</span>`;
+        } else {
+            html += `<button type="button" class="cal-day-cell is-valid ${isSelected ? 'is-selected' : ''}" data-date="${iso}" aria-label="${iso}">${d}</button>`;
+        }
+    }
+
+    daysGrid.innerHTML = html;
+
+    daysGrid.querySelectorAll('.cal-day-cell.is-valid').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const pickedDate = btn.dataset.date;
+            if (dateInput) {
+                dateInput.value = pickedDate;
+            }
+            closeCalendarPopover();
+            renderQuickDateStrip(pickedDate);
+            loadContractDemoSlots();
+        });
+    });
+}
+window.toggleCalendarPopover = toggleCalendarPopover;
+window.closeCalendarPopover = closeCalendarPopover;
+
+function renderQuickDateStrip(selectedDate) {
+    const container = document.getElementById('contract-quick-dates');
+    if (!container) return;
+    const dates = [];
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    while (dates.length < 5) {
+        const dateStr = getAmiroCalendarDate(d);
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Kolkata', weekday: 'short', month: 'short', day: 'numeric'
+        }).formatToParts(d);
+        const val = Object.fromEntries(parts.map(p => [p.type, p.value]));
+        dates.push({
+            iso: dateStr,
+            weekday: val.weekday,
+            day: val.day,
+            month: val.month
+        });
+        d.setDate(d.getDate() + 1);
+    }
+    container.innerHTML = dates.map(item => `
+        <button type="button" class="contract-date-chip ${item.iso === selectedDate ? 'is-selected' : ''}" data-date="${item.iso}" aria-label="${item.weekday}, ${item.month} ${item.day}">
+            <span class="date-chip-day">${escapeHtml(item.weekday)}</span>
+            <span class="date-chip-num">${escapeHtml(item.day)}</span>
+            <span class="date-chip-month">${escapeHtml(item.month)}</span>
+        </button>
+    `).join('');
+    container.querySelectorAll('.contract-date-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            closeCalendarPopover();
+            const dateInput = document.getElementById('contract-demo-date');
+            if (dateInput) {
+                dateInput.value = btn.dataset.date;
+                renderQuickDateStrip(btn.dataset.date);
+                loadContractDemoSlots();
+            }
+        });
+    });
+    const customBtn = document.getElementById('contract-custom-date-btn');
+    const customLabel = document.getElementById('contract-custom-date-label');
+    const isQuick = dates.some(it => it.iso === selectedDate);
+    if (customBtn && customLabel) {
+        if (isQuick) {
+            customBtn.classList.remove('is-selected');
+            customLabel.textContent = 'Full Calendar';
+            customBtn.title = 'Choose any date from calendar';
+        } else if (selectedDate) {
+            customBtn.classList.add('is-selected');
+            try {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Kolkata', weekday: 'short', month: 'short', day: 'numeric'
+                }).formatToParts(new Date(`${selectedDate}T12:00:00+05:30`));
+                const val = Object.fromEntries(parts.map(p => [p.type, p.value]));
+                customLabel.textContent = `${val.day} ${val.month}`;
+                customBtn.title = `Selected date: ${val.weekday}, ${val.day} ${val.month}. Click to change date.`;
+            } catch (_) {
+                customLabel.textContent = selectedDate;
+            }
+        }
+    }
+}
+
+async function loadContractDemoSlots() {
+    const dateInput = document.getElementById('contract-demo-date');
+    const timeInput = document.getElementById('contract-demo-time');
+    const slotsGrid = document.getElementById('contract-time-slots-grid');
+    const slotsMeta = document.getElementById('contract-slots-count');
+    const status = document.getElementById('contract-demo-calendar-status');
+    if (!dateInput || !timeInput || !status || !dateInput.value) return;
+
+    const today = getAmiroCalendarDate();
+    if (dateInput.value <= today) {
+        if (slotsGrid) slotsGrid.innerHTML = '<div class="contract-slots-empty"><i class="fas fa-calendar-times"></i> Same-day appointments are not available. Please pick a date from tomorrow onwards.</div>';
+        if (slotsMeta) slotsMeta.textContent = 'Unavailable';
+        timeInput.value = '';
+        timeInput.dataset.label = '';
+        status.textContent = 'Please choose an upcoming date (from tomorrow onwards). Same-day appointments are not available.';
+        status.className = 'contract-demo-calendar-status is-error';
+        updateDemoBookingButton();
+        return;
+    }
+
+
+
+    renderQuickDateStrip(dateInput.value);
+    timeInput.value = '';
+    timeInput.dataset.label = '';
+    updateDemoBookingButton();
+
+    if (slotsGrid) {
+        slotsGrid.innerHTML = '<div class="contract-slots-loading"><i class="fas fa-circle-notch fa-spin"></i> Checking live available times…</div>';
+    }
+    if (slotsMeta) slotsMeta.textContent = 'Loading times…';
+    status.textContent = '';
+    status.className = 'contract-demo-calendar-status';
+
+    try {
+        const availability = await API.get(`/demo-bookings/availability?day=${encodeURIComponent(dateInput.value)}`);
+        const slots = Array.isArray(availability.slots) ? availability.slots : [];
+        if (!slots.length) {
+            if (slotsGrid) {
+                slotsGrid.innerHTML = '<div class="contract-slots-empty"><i class="fas fa-calendar-times"></i> All demo slots for this date are already booked. Please choose another date.</div>';
+            }
+            if (slotsMeta) slotsMeta.textContent = '0 slots available';
+            status.textContent = 'All demo slots for this date are already booked. Can you please select another date or slot timing?';
+            status.className = 'contract-demo-calendar-status is-error';
+        } else {
+            if (slotsMeta) {
+                slotsMeta.textContent = `${slots.length} available · ${escapeHtml(availability.timezone || 'Asia/Kolkata')}`;
+            }
+            if (slotsGrid) {
+                slotsGrid.innerHTML = slots.map((slot, idx) => `
+                    <button type="button" class="contract-time-chip ${idx === 0 ? 'is-selected' : ''}" data-start="${escapeHtml(slot.start)}" data-label="${escapeHtml(slot.label)}">
+                        ${idx === 0 ? '<i class="fas fa-check"></i>' : ''}<span>${escapeHtml(slot.label)}</span>
+                    </button>
+                `).join('');
+
+                if (slots.length > 0) {
+                    timeInput.value = slots[0].start;
+                    timeInput.dataset.label = slots[0].label;
+                }
+
+                slotsGrid.querySelectorAll('.contract-time-chip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        slotsGrid.querySelectorAll('.contract-time-chip').forEach(c => {
+                            c.classList.remove('is-selected');
+                            const icon = c.querySelector('i');
+                            if (icon) icon.remove();
+                        });
+                        chip.classList.add('is-selected');
+                        if (!chip.querySelector('i')) {
+                            const icon = document.createElement('i');
+                            icon.className = 'fas fa-check';
+                            chip.prepend(icon);
+                        }
+                        timeInput.value = chip.dataset.start;
+                        timeInput.dataset.label = chip.dataset.label;
+                        updateDemoBookingButton();
+                    });
+                });
+            }
+        }
+    } catch (error) {
+        if (slotsGrid) {
+            slotsGrid.innerHTML = `<div class="contract-slots-empty"><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(error.message || 'Times unavailable')}</div>`;
+        }
+        if (slotsMeta) slotsMeta.textContent = 'Unavailable';
+        status.textContent = error.message || 'Google Calendar is temporarily unavailable. Please try again later.';
+        status.className = 'contract-demo-calendar-status is-error';
+    }
+    updateDemoBookingButton();
+}
+
+function updateDemoBookingButton() {
+    const submit = document.getElementById('contract-request-submit');
+    const timeInput = document.getElementById('contract-demo-time');
+    if (!submit) return;
+    submit.disabled = !timeInput?.value;
+}
+
+async function handleDemoBookingSubmit(event) {
+    if (event) event.preventDefault();
+    const form = document.getElementById('contract-request-form');
+    const submit = document.getElementById('contract-request-submit');
+    const status = document.getElementById('contract-demo-booking-status');
+    const timeSelect = document.getElementById('contract-demo-time');
+    const dateInput = document.getElementById('contract-demo-date');
+
+    if (status) { status.textContent = ''; status.className = 'contract-demo-booking-status'; }
+
+    if (!dateInput || !dateInput.value) {
+        if (status) {
+            status.textContent = 'Please choose an appointment date above.';
+            status.className = 'contract-demo-booking-status is-error';
+        }
+        return;
+    }
+
+    if (!timeSelect || !timeSelect.value) {
+        if (status) {
+            status.textContent = 'Please click one of the available times above to book your appointment.';
+            status.className = 'contract-demo-booking-status is-error';
+        }
+        const grid = document.getElementById('contract-time-slots-grid');
+        grid?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+    }
+
+    if (!submit) return;
+    submit.disabled = true;
+    submit.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Booking appointment…';
+    if (status) { status.textContent = ''; status.className = 'contract-demo-booking-status'; }
+    const attemptedSlot = timeSelect.dataset?.label || timeSelect.value || 'That time';
+    const values = new FormData(form);
+
+    let savedClient = {};
+    try {
+        savedClient = JSON.parse(sessionStorage.getItem('amiro_demo_client_details') || localStorage.getItem('amiro_demo_client_details') || '{}');
+    } catch (_) {}
+
+    const currentUser = (typeof AuthAPI !== 'undefined' && AuthAPI.getUser) ? AuthAPI.getUser() : null;
+    const name = values.get('name') || savedClient.name || currentUser?.name || 'Amiro Team Member';
+    const email = values.get('email') || savedClient.email || currentUser?.email || 'amirotechsolutions.sales@gmail.com';
+    const company = values.get('company') || savedClient.company_name || savedClient.company || '';
+    const phone = values.get('phone') || savedClient.phone || '';
+    const address = values.get('address') || savedClient.company_address || savedClient.address || '';
+    const industry = values.get('industry') || savedClient.industry || '';
+
+    const modalMessage = String(values.get('message') || '').trim();
+    const savedReq = String(savedClient.requirements || '').trim();
+    let finalRequirements = modalMessage;
+    if (savedReq && modalMessage && savedReq !== modalMessage) {
+        finalRequirements = `${modalMessage}\n\n[Initial requirements: ${savedReq}]`;
+    } else if (!finalRequirements && savedReq) {
+        finalRequirements = savedReq;
+    }
+
+    try {
+        const result = await API.post('/demo-bookings', {
+            name: name,
+            email: email,
+            company_name: company || null,
+            company_address: address || null,
+            phone: phone || null,
+            industry: industry || null,
+            message: finalRequirements || null,
+            requested_module: values.get('requested_module') || 'IMS Demo',
+            start_at: timeSelect.value,
+            website: values.get('website') || ''
+        });
+        if (!result.booked) throw new Error('The appointment could not be booked. Please choose another available time.');
+        const emailSent = result.email_notifications?.amiro_notification_sent;
+        if (status) {
+            status.textContent = emailSent
+                ? 'Appointment booked! Confirmation email with your Google Meet link has been sent to your email, and added to Google Calendar.'
+                : 'Appointment booked and invitation sent. Amiro’s details email could not be sent; please contact the Amiro team.';
+            status.className = 'contract-demo-booking-status is-success';
+        }
+        submit.textContent = 'Appointment booked';
+        form.querySelectorAll('input, select, textarea').forEach(input => { input.disabled = true; });
+    } catch (error) {
+        const message = error.message || 'We could not book that time. Please try again.';
+        const isAlreadyBooked = /already booked|just booked|no longer available|not available/i.test(message);
+        if (status) {
+            status.textContent = isAlreadyBooked
+                ? `This slot is already booked. Can you please select other slot timings?`
+                : message;
+            status.className = 'contract-demo-booking-status is-error';
+        }
+        if (isAlreadyBooked) {
+            timeSelect.value = '';
+            loadContractDemoSlots();
+        }
+        submit.textContent = 'Request access and book appointment';
+        updateDemoBookingButton();
+    }
+}
+
+function resetContractRequestForm() {
+    closeCalendarPopover();
+    const form = document.getElementById('contract-request-form');
+    const bookingStatus = document.getElementById('contract-demo-booking-status');
+    const submit = document.getElementById('contract-request-submit');
+    if (!form) return;
+    form.reset();
+    form.querySelectorAll('input, select, textarea').forEach(input => { input.disabled = false; });
+    if (bookingStatus) { bookingStatus.textContent = ''; bookingStatus.className = 'contract-demo-booking-status'; }
+    const dateInput = document.getElementById('contract-demo-date');
+    const timeSelect = document.getElementById('contract-demo-time');
+    const calendarStatus = document.getElementById('contract-demo-calendar-status');
+    if (dateInput && timeSelect) {
+        const tomorrow = getAmiroTomorrowDate();
+        const nextDate = getNextBookableDemoDate();
+        dateInput.min = tomorrow;
+        const maxDate = new Date(`${tomorrow}T00:00:00Z`);
+        maxDate.setUTCDate(maxDate.getUTCDate() + 90);
+        dateInput.max = maxDate.toISOString().slice(0, 10);
+        dateInput.value = nextDate;
+        timeSelect.value = '';
+        timeSelect.dataset.label = '';
+        if (calendarStatus) { calendarStatus.textContent = ''; calendarStatus.className = 'contract-demo-calendar-status'; }
+        renderQuickDateStrip(nextDate);
+    }
+    if (submit) { submit.disabled = true; submit.textContent = 'Request access and book appointment'; }
+    loadContractDemoSlots();
+}
 // Authentication
 let lockoutInterval = null;
 
@@ -751,6 +1414,7 @@ function showPasswordResetModal(token) {
 
 // Page Navigation
 function showLoginPage() {
+    resetAmiroAssistant();
     document.getElementById('login-page').classList.remove('hidden');
     document.getElementById('main-app').classList.add('hidden');
     // Reset login form state
@@ -775,6 +1439,10 @@ function showLoginPage() {
 }
 
 function showMainApp() {
+    document.documentElement.classList.remove('demo-loading');
+    const splash = document.getElementById('demo-loading-splash');
+    if (splash) splash.remove();
+
     // Always clean the URL when showing the main app (removes any leaked credentials)
     if (window.location.search || window.location.hash) {
         window.history.replaceState(null, '', window.location.pathname);
@@ -796,6 +1464,8 @@ function showMainApp() {
 function updateUserInfo(user) {
     document.getElementById('user-name').textContent = user.name;
     document.getElementById('user-role').textContent = ROLE_LABELS[user.role] || user.role;
+    const demoPill = document.getElementById('demo-mode-pill');
+    if (demoPill) demoPill.hidden = user.role !== 'demo_user';
     // Set avatar initials
     const avatarEl = document.getElementById('user-avatar');
     if (avatarEl && user.name) {
@@ -811,7 +1481,18 @@ function applyRoleRestrictions() {
     if (!perms.role) return;
 
     // Sidebar visibility by role
-    const pageAccess = {
+    const pageAccess = perms.isDemoUser ? {
+        dashboard: true,
+        items: true,
+        stock: true,
+        locations: true,
+        categories: true,
+        transfers: true,
+        compliance: true,
+        logs: true,
+        personal: true,
+        users: true,
+    } : {
         dashboard: true,
         items: true,
         stock: true,
@@ -827,6 +1508,19 @@ function applyRoleRestrictions() {
     document.querySelectorAll('.nav-item[data-page]').forEach(item => {
         const page = item.dataset.page;
         item.style.display = pageAccess[page] === false ? 'none' : '';
+        const locked = perms.isDemoUser && !['dashboard', 'items', 'compliance', 'users'].includes(page);
+        item.classList.toggle('is-locked', locked);
+        item.setAttribute('aria-disabled', locked ? 'true' : 'false');
+        item.querySelector('.nav-lock-indicator')?.remove();
+        if (locked) {
+            const indicator = document.createElement('span');
+            indicator.className = 'nav-lock-indicator';
+            indicator.innerHTML = '<i class="fas fa-lock" aria-hidden="true"></i><span class="sr-only">Locked</span>';
+            item.appendChild(indicator);
+            item.title = 'Locked — contact Amiro to unlock';
+        } else {
+            item.removeAttribute('title');
+        }
     });
 
     // Hide "Add" buttons in section headers for restricted users
@@ -854,8 +1548,12 @@ function navigateTo(page) {
     // Check permission before navigating
     const perms = getUserPermissions();
     if (perms.role) {
+        if (perms.isDemoUser && !['dashboard', 'items', 'compliance', 'users'].includes(page)) {
+            openContractRequestModal(page);
+            return;
+        }
         const restricted = {
-            users: perms.isAdmin || perms.isHOManager,
+            users: perms.isAdmin || perms.isHOManager || perms.isDemoUser,
             locations: perms.canManage,
             categories: perms.canManage,
             logs: perms.isAdmin || perms.isHOManager,
@@ -1882,7 +2580,7 @@ async function loadDashboard() {
         if (greetEl) {
             const hour = new Date().getHours();
             const period = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
-            greetEl.textContent = `${period}, ${user.name || 'User'}`;
+            greetEl.innerHTML = `${period}, <span class="greeting-name">${escapeHtml(user.name || 'User')}</span> <span class="greeting-wave" aria-hidden="true">👋</span>`;
         }
         if (dateEl) {
             dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -1907,6 +2605,12 @@ async function loadDashboard() {
             animateCount('calibration-count', calTotal);
             animateCount('total-jobs', dashboardSummary.total_jobs ?? 0);
         }
+        const lowStockTotal = Number(dashboardSummary?.low_stock_count ?? (Array.isArray(lowStockItems) ? lowStockItems.length : 0));
+        const calibrationTotal = Array.isArray(calAlerts) ? calAlerts.length : 0;
+        const lowStockSubtitle = document.getElementById('low-stock-subtitle');
+        const calibrationSubtitle = document.getElementById('calibration-subtitle');
+        if (lowStockSubtitle) lowStockSubtitle.textContent = lowStockTotal === 0 ? 'No action required' : 'Items below reorder';
+        if (calibrationSubtitle) calibrationSubtitle.textContent = calibrationTotal === 0 ? 'All up to date' : 'Due / Expired';
         
         // Populate location filter
         try {
@@ -2060,7 +2764,7 @@ function animateCount(elementId, target) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const ease = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(start + (target - start) * ease);
+        el.textContent = String(Math.round(start + (target - start) * ease)).padStart(2, '0');
         if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -2134,10 +2838,28 @@ async function loadLocationStockSummary() {
         
         // Build location cards for DASHBOARD
         const dashboardGrid = document.getElementById('dashboard-locations-grid');
+        const locationTableBody = document.getElementById('dashboard-location-table-body');
         
         if (summary.locations.length === 0) {
-            dashboardGrid.innerHTML = '<p class="text-muted">No stock data available</p>';
+            if (locationTableBody) locationTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">No stock data available</td></tr>';
+            if (dashboardGrid) dashboardGrid.innerHTML = '<p class="text-muted">No stock data available</p>';
             return;
+        }
+
+        if (locationTableBody) {
+            locationTableBody.innerHTML = summary.locations.map(loc => {
+                const received = loc.items.reduce((sum, item) => sum + Number(item.received_today || 0), 0);
+                const issued = loc.items.reduce((sum, item) => sum + Number(item.issued_today || 0), 0);
+                const adjusted = loc.items.reduce((sum, item) => sum + Number(item.adjusted_today || 0), 0);
+                const totalStock = loc.items.reduce((sum, item) => sum + Number(item.opening_balance || 0) + Number(item.received_today || 0), 0);
+                const available = loc.items.reduce((sum, item) => sum + Number(item.closing_balance || 0), 0);
+                return `<tr>
+                    <td><span class="location-table-name"><i class="fas fa-building"></i>${loc.location_name}</span></td>
+                    <td>${totalStock.toLocaleString()}</td><td class="stock-positive">+${received.toLocaleString()}</td>
+                    <td class="stock-negative">-${issued.toLocaleString()}</td><td><strong>${available.toLocaleString()}</strong></td>
+                    <td>${adjusted > 0 ? '+' : ''}${adjusted.toLocaleString()}</td>
+                </tr>`;
+            }).join('');
         }
         
         dashboardGrid.innerHTML = summary.locations.map(loc => {
@@ -2245,8 +2967,10 @@ async function loadLocationStockSummary() {
         
     } catch (error) {
         console.error('Location stock summary load error:', error);
-        document.getElementById('dashboard-locations-grid').innerHTML = 
-            '<p class="text-muted">Error loading location stock data</p>';
+        const locationTableBody = document.getElementById('dashboard-location-table-body');
+        if (locationTableBody) locationTableBody.innerHTML = '<tr><td colspan="6" class="text-muted">Error loading location stock data</td></tr>';
+        const dashboardGrid = document.getElementById('dashboard-locations-grid');
+        if (dashboardGrid) dashboardGrid.innerHTML = '<p class="text-muted">Error loading location stock data</p>';
     }
 }
 
@@ -3213,7 +3937,9 @@ function renderUsersTable(users) {
     tbody.innerHTML = users.map(user => {
         const roleBadge = ROLE_BADGES[user.role] || 'badge-secondary';
         const roleLabel = ROLE_LABELS[user.role] || user.role;
-        const locNames = (user.assigned_location_ids || []).map(id => locationMap[id] || id).join(', ') || '<span class="text-muted">All / None</span>';
+        const locNames = user.role === 'demo_user'
+            ? '<span class="text-muted">Demo module access</span>'
+            : (user.assigned_location_ids || []).map(id => locationMap[id] || id).join(', ') || '<span class="text-muted">All / None</span>';
         let actionsHtml = (
             perms.isAdmin || (perms.isHOManager && user.role === 'location_manager')
         ) ? `<button class="btn-icon" onclick="editUser('${user.id}')" title="Edit"><i class="fas fa-edit"></i></button>` : '';
@@ -3593,9 +4319,9 @@ async function showAssetsDetails() {
 
         const tableRows = assets.map(a => `
             <tr>
-                <td><strong>${a.serial_number || '-'}</strong></td>
-                <td>${a.item_name || a.item_sku || '-'}</td>
-                <td>${a.location_name || '-'}</td>
+                <td><strong>${escapeHtml(a.serial_number || '-')}</strong></td>
+                <td>${escapeHtml(a.item_name || a.item_sku || '-')}</td>
+                <td>${escapeHtml(a.location_name || '-')}</td>
                 <td>${statusBadge(a.status)}</td>
                 <td>${calBadge(a.calibration_status)}</td>
                 <td>${a.next_calibration_due || '-'}</td>
@@ -3603,13 +4329,13 @@ async function showAssetsDetails() {
         `).join('');
 
         openModal('Equipment / Instruments - Complete Details', `
-            <div>
-                <div class="alert alert-info" style="margin-bottom: 15px;">
-                    <i class="fas fa-tools"></i>
-                    <strong>${assets.length} serialized product(s)</strong> registered in the system.
+            <div class="equipment-details-content">
+                <div class="equipment-details-summary">
+                    <span class="equipment-details-summary-icon"><i class="fas fa-toolbox"></i></span>
+                    <span><strong>${assets.length} serialized product${assets.length === 1 ? '' : 's'}</strong><small>Registered in the system</small></span>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table">
+                <div class="table-responsive equipment-details-table-wrap">
+                    <table class="data-table equipment-details-table">
                         <thead>
                             <tr>
                                 <th>Serial No.</th>
@@ -3623,11 +4349,12 @@ async function showAssetsDetails() {
                         <tbody>${tableRows}</tbody>
                     </table>
                 </div>
-                <div class="modal-footer" style="margin-top: 15px;">
+                <div class="modal-footer equipment-details-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal()">Close</button>
                 </div>
             </div>
-        `, 'modal-lg');
+        `, 'modal-xl');
+        document.querySelector('.modal')?.classList.add('equipment-details-modal');
     } catch (error) {
         console.error('Error loading equipment/instrument details:', error);
         showToast('Error loading equipment/instrument details', 'error');
@@ -3647,23 +4374,23 @@ async function showLocationsDetails() {
 
         const tableRows = locations.map(loc => `
             <tr>
-                <td><strong>${loc.code || '-'}</strong></td>
-                <td>${loc.name || '-'}</td>
-                <td>${loc.city || '-'}</td>
-                <td>${loc.contact_person || '-'}</td>
-                <td>${loc.phone || '-'}</td>
+                <td><strong>${escapeHtml(loc.code || '-')}</strong></td>
+                <td>${escapeHtml(loc.name || '-')}</td>
+                <td>${escapeHtml(loc.city || '-')}</td>
+                <td>${escapeHtml(loc.contact_person || '-')}</td>
+                <td>${escapeHtml(loc.phone || '-')}</td>
                 <td>${loc.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
             </tr>
         `).join('');
 
         openModal('All Locations - Complete Details', `
-            <div>
-                <div class="alert alert-info" style="margin-bottom: 15px;">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <strong>${locations.length} location(s)</strong> configured in the system.
+            <div class="equipment-details-content">
+                <div class="equipment-details-summary">
+                    <span class="equipment-details-summary-icon"><i class="fas fa-map-marker-alt"></i></span>
+                    <span><strong>${locations.length} location${locations.length === 1 ? '' : 's'}</strong><small>Configured in the system</small></span>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table">
+                <div class="table-responsive equipment-details-table-wrap">
+                    <table class="data-table equipment-details-table">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -3677,11 +4404,12 @@ async function showLocationsDetails() {
                         <tbody>${tableRows}</tbody>
                     </table>
                 </div>
-                <div class="modal-footer" style="margin-top: 15px;">
+                <div class="modal-footer equipment-details-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal()">Close</button>
                 </div>
             </div>
-        `, 'modal-lg');
+        `, 'modal-xl');
+        document.querySelector('.modal')?.classList.add('equipment-details-modal');
     } catch (error) {
         console.error('Error loading locations details:', error);
         showToast('Error loading locations details', 'error');
@@ -3911,6 +4639,15 @@ function adjustStockForItem(itemId, locationId, itemSku) {
 }
 
 async function showAddItemModal() {
+    // Give immediate feedback while the required form options are loaded.
+    openModal('Add New Product', `
+        <div class="add-product-loading" role="status" aria-live="polite">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            <strong>Preparing the product form…</strong>
+            <span>Loading available types and locations.</span>
+        </div>
+    `);
+
     // Load categories and locations first
     try {
         const [catData, locData] = await Promise.all([
@@ -3919,9 +4656,19 @@ async function showAddItemModal() {
         ]);
         categories = Array.isArray(catData) ? catData : (catData.items || []);
         locations = Array.isArray(locData) ? locData : (locData.items || []);
-    } catch (e) {
-        categories = [];
-        locations = [];
+    } catch (error) {
+        const message = escapeHtml(error?.message || 'The product form could not load its required data.');
+        document.getElementById('modal-body').innerHTML = `
+            <div class="add-product-load-error" role="alert">
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <strong>Couldn’t prepare the product form</strong>
+                <p>${message}</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="showAddItemModal()"><i class="fas fa-redo"></i> Try Again</button>
+                </div>
+            </div>`;
+        return;
     }
     
     const serialCategories = categories.filter(c =>
@@ -3930,11 +4677,23 @@ async function showAddItemModal() {
     );
     const locationOptions = locations.map(l => `<option value="${l.id}">${escapeHtml(l.name)}</option>`).join('');
     if (locations.length === 0) {
-        showToast('No active locations are available for product assignment.', 'warning');
+        document.getElementById('modal-body').innerHTML = `
+            <div class="add-product-load-error" role="alert">
+                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                <strong>No active locations are available</strong>
+                <p>Add or activate a location before creating a product.</p>
+                <div class="modal-footer"><button type="button" class="btn btn-outline" onclick="closeModal()">Close</button></div>
+            </div>`;
         return;
     }
     if (serialCategories.length === 0) {
-        showToast('No Equipment or Instrument types are available for Products.', 'warning');
+        document.getElementById('modal-body').innerHTML = `
+            <div class="add-product-load-error" role="alert">
+                <i class="fas fa-layer-group" aria-hidden="true"></i>
+                <strong>No equipment or instrument types are available</strong>
+                <p>Create an equipment or instrument category before adding a product.</p>
+                <div class="modal-footer"><button type="button" class="btn btn-outline" onclick="closeModal()">Close</button></div>
+            </div>`;
         return;
     }
     
@@ -8814,7 +9573,8 @@ async function showAddCalibrationModal(assetId) {
 async function loadUsers() {
     try {
         // Ensure locations are loaded for the table display
-        if (!locations || locations.length === 0) {
+        const isDemoUser = AuthAPI.getUser()?.role === 'demo_user';
+        if (!isDemoUser && (!locations || locations.length === 0)) {
             try {
                 const locData = await LocationsAPI.getAll({ page_size: 500 });
                 locations = Array.isArray(locData) ? locData : (locData.items || []);
@@ -9564,6 +10324,7 @@ function showAddUserModal() {
                         <label>Role *</label>
                         <select name="role" required id="add-user-role-select" onchange="toggleAddUserLocationSection()">
                             <option value="location_manager">Location Manager</option>
+                            ${perms.isAdmin ? '<option value="demo_user">Demo User (view-only)</option>' : ''}
                             ${perms.isAdmin ? '<option value="head_office_manager">General Manager</option>' : ''}
                             ${perms.isAdmin ? '<option value="admin">Admin</option>' : ''}
                         </select>
@@ -9635,6 +10396,14 @@ function toggleAddUserLocationSection() {
     const locGroup = document.getElementById('add-user-location-group');
     if (!roleSelect || !locGroup) return;
     locGroup.style.display = roleSelect.value === 'location_manager' ? '' : 'none';
+    if (roleSelect.value === 'demo_user') {
+        const nameInput = document.querySelector('#add-user-form [name="name"]');
+        const emailInput = document.querySelector('#add-user-form [name="email"]');
+        const departmentInput = document.querySelector('#add-user-form [name="department"]');
+        if (nameInput && !nameInput.value) nameInput.value = 'Amiro Demo';
+        if (emailInput && !emailInput.value) emailInput.value = 'demo.amiro@gmail.com';
+        if (departmentInput && !departmentInput.value) departmentInput.value = 'Demo';
+    }
 }
 
 function toggleEditUserLocationSection() {
@@ -9681,6 +10450,7 @@ async function editUser(id) {
                         <label>Role *</label>
                         <select name="role" required id="edit-user-role-select" onchange="toggleEditUserLocationSection()">
                             <option value="location_manager" ${user.role === 'location_manager' ? 'selected' : ''}>Location Manager</option>
+                            ${getUserPermissions().isAdmin ? `<option value="demo_user" ${user.role === 'demo_user' ? 'selected' : ''}>Demo User (view-only)</option>` : ''}
                             ${getUserPermissions().isAdmin ? `<option value="head_office_manager" ${user.role === 'head_office_manager' ? 'selected' : ''}>General Manager</option>` : ''}
                             ${getUserPermissions().isAdmin ? `<option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>` : ''}
                         </select>
@@ -9767,6 +10537,7 @@ function openModal(title, content, sizeClass = '') {
     // Apply size class if provided
     const modal = document.querySelector('.modal');
     modal.classList.remove('modal-lg', 'modal-xl');
+    modal.classList.remove('equipment-details-modal');
     if (sizeClass) {
         modal.classList.add(sizeClass);
     }
@@ -10626,8 +11397,12 @@ async function loadStockCategoryChart() {
     }
 
     const labels = items.map(function(i) { return i.category_name || 'Uncategorized'; });
-    const values = items.map(function(i) { return i.total_quantity != null ? i.total_quantity : (i.count || 0); });
-    const palette = ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16'];
+    const values = items.map(function(i) { return Number(i.total_quantity != null ? i.total_quantity : (i.count || 0)) || 0; });
+    const palette = ['#2878e8','#f4a51c','#20b889','#9656e8'];
+    const colors = labels.map(function(_, index) { return palette[index % palette.length]; });
+    const totalStock = values.reduce(function(total, value) { return total + value; }, 0);
+    canvas.style.display = '';
+    if (emptyEl) emptyEl.style.display = 'none';
 
     if (_stockCategoryChart) { _stockCategoryChart.destroy(); _stockCategoryChart = null; }
 
@@ -10638,30 +11413,75 @@ async function loadStockCategoryChart() {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: palette.slice(0, labels.length),
-                borderWidth: 2,
+                backgroundColor: colors,
+                borderWidth: 3,
                 borderColor: isDark ? '#1e2433' : '#fff',
+                hoverOffset: 5,
             }],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '62%',
+            layout: { padding: 5 },
             plugins: {
                 legend: {
                     position: 'right',
                     labels: {
-                        font: { family: 'Inter', size: 12 },
-                        color: isDark ? '#c0c8e0' : '#374151',
+                        boxWidth: 14,
+                        boxHeight: 12,
                         padding: 12,
+                        font: { family: 'Inter', size: 11, weight: '500' },
+                        color: isDark ? '#c0c8e0' : '#374151',
+                        generateLabels: function(chart) {
+                            return chart.data.labels.map(function(label, index) {
+                                const rawValue = Number(chart.data.datasets[0].data[index]) || 0;
+                                const percent = totalStock > 0 ? Math.round(rawValue / totalStock * 100) : 0;
+                                const shortLabel = label.length > 17 ? label.slice(0, 16) + '…' : label;
+                                return {
+                                    text: `${shortLabel}  ${percent}%`,
+                                    fillStyle: colors[index],
+                                    strokeStyle: colors[index],
+                                    fontColor: isDark ? '#e2e8f0' : '#374151',
+                                    lineWidth: 0,
+                                    hidden: !chart.getDataVisibility(index),
+                                    index: index,
+                                };
+                            });
+                        },
                     },
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.raw.toLocaleString() + ' units'; },
+                        label: function(ctx) {
+                            const value = Number(ctx.raw) || 0;
+                            const percent = totalStock > 0 ? Math.round(value / totalStock * 100) : 0;
+                            return ` ${ctx.label}: ${value.toLocaleString()} units (${percent}%)`;
+                        },
                     },
                 },
             },
         },
+        plugins: [{
+            id: 'stockCategoryCenterLabel',
+            afterDraw: function(chart) {
+                const arc = chart.getDatasetMeta(0)?.data?.[0];
+                if (!arc) return;
+                const ctx = chart.ctx;
+                const centerX = arc.x;
+                const centerY = arc.y;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = isDark ? '#f3f4f6' : '#172b4d';
+                ctx.font = '700 23px Inter, sans-serif';
+                ctx.fillText(totalStock.toLocaleString('en-IN', { maximumFractionDigits: 1 }), centerX, centerY - 7);
+                ctx.fillStyle = isDark ? '#aeb8c7' : '#617493';
+                ctx.font = '500 11px Inter, sans-serif';
+                ctx.fillText('Total Stock', centerX, centerY + 14);
+                ctx.restore();
+            },
+        }],
     });
 }
 
@@ -10676,10 +11496,13 @@ async function loadStockMovementChart() {
     const days = [];
     const receipts = {};
     const issues = {};
+    const localDateKey = function(date) {
+        return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    };
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
+        const key = localDateKey(d);
         const label = d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
         days.push({ key: key, label: label });
         receipts[key] = 0;
@@ -10687,20 +11510,18 @@ async function loadStockMovementChart() {
     }
 
     activities.forEach(function(act) {
-        const key = (act.created_at || '').slice(0, 10);
+        const timestamp = act.created_at ? new Date(act.created_at) : null;
+        if (!timestamp || Number.isNaN(timestamp.getTime())) return;
+        const key = localDateKey(timestamp);
         if (!Object.prototype.hasOwnProperty.call(receipts, key)) return;
         const action = (act.action || '').toLowerCase();
-        const qty = Math.abs(act.quantity || 0);
+        const qty = Math.abs(Number(act.quantity) || 0);
         if (action.includes('receipt') || action.includes('return')) receipts[key] += qty;
         else if (action.includes('issue') || action.includes('scrap')) issues[key] += qty;
     });
 
-    const hasData = days.some(function(d) { return receipts[d.key] > 0 || issues[d.key] > 0; });
-    if (!hasData) {
-        canvas.style.display = 'none';
-        if (emptyEl) emptyEl.style.display = '';
-        return;
-    }
+    canvas.style.display = '';
+    if (emptyEl) emptyEl.style.display = 'none';
 
     if (_stockMovementChart) { _stockMovementChart.destroy(); _stockMovementChart = null; }
     const isDark = document.documentElement.classList.contains('dark-mode');
@@ -10708,21 +11529,37 @@ async function loadStockMovementChart() {
     const textColor = isDark ? '#c0c8e0' : '#374151';
 
     _stockMovementChart = new Chart(canvas, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: days.map(function(d) { return d.label; }),
             datasets: [
                 {
                     label: 'Receipts',
                     data: days.map(function(d) { return receipts[d.key]; }),
-                    backgroundColor: 'rgba(16,185,129,0.75)',
-                    borderRadius: 4,
+                    borderColor: '#31c49a',
+                    backgroundColor: 'rgba(49,196,154,0.1)',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#31c49a',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.32,
+                    fill: false,
                 },
                 {
                     label: 'Issues',
                     data: days.map(function(d) { return issues[d.key]; }),
-                    backgroundColor: 'rgba(239,68,68,0.75)',
-                    borderRadius: 4,
+                    borderColor: '#f06b70',
+                    backgroundColor: 'rgba(240,107,112,0.1)',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#f06b70',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.32,
+                    fill: false,
                 },
             ],
         },
@@ -10731,19 +11568,25 @@ async function loadStockMovementChart() {
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    grid: { color: gridColor },
-                    ticks: { color: textColor, font: { family: 'Inter', size: 11 } },
+                    grid: { color: gridColor, drawBorder: false },
+                    border: { display: false },
+                    ticks: { color: textColor, font: { family: 'Inter', size: 11, weight: '500' }, maxRotation: 0 },
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: gridColor },
-                    ticks: { color: textColor, font: { family: 'Inter', size: 11 } },
+                    grid: { color: gridColor, drawBorder: false },
+                    border: { display: false },
+                    ticks: { color: textColor, precision: 0, font: { family: 'Inter', size: 11 } },
                 },
             },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: {
-                    labels: { color: textColor, font: { family: 'Inter', size: 12 } },
+                    position: 'top',
+                    align: 'center',
+                    labels: { color: textColor, boxWidth: 22, boxHeight: 10, padding: 16, font: { family: 'Inter', size: 12, weight: '500' } },
                 },
+                tooltip: { displayColors: true, padding: 10, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y.toLocaleString()}`; } } },
             },
         },
     });
@@ -10858,7 +11701,7 @@ document.addEventListener('keydown', function(e) {
         }
         if (key === 'n') {
             e.preventDefault();
-            document.getElementById('global-search') && document.getElementById('global-search').focus();
+            openQuickSearch();
             return;
         }
         if (key === 'b') {
@@ -10881,6 +11724,286 @@ document.addEventListener('keydown', function(e) {
 function premiumInit() {
     initDarkMode();
     startNotificationPolling();
+}
+
+// Amiro Intelligence is intentionally limited to English and this application's IMS data.
+function initializeAmiroAssistant() {
+    const launcher = document.getElementById('amiro-ai-launch');
+    const panel = document.getElementById('amiro-ai-panel');
+    const form = document.getElementById('amiro-ai-form');
+    const input = document.getElementById('amiro-ai-input');
+    if (!launcher || !panel || !form || !input || form.dataset.initialized === 'true') return;
+
+    form.dataset.initialized = 'true';
+    launcher.addEventListener('click', openAmiroAssistant);
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        sendAmiroAssistantMessage();
+    });
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            sendAmiroAssistantMessage();
+        }
+    });
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = `${Math.min(input.scrollHeight, 110)}px`;
+    });
+    panel.querySelectorAll('[data-amiro-question]').forEach(button => {
+        button.addEventListener('click', () => sendAmiroAssistantMessage(button.dataset.amiroQuestion || ''));
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !panel.classList.contains('hidden')) closeAmiroAssistant();
+    });
+}
+
+function openAmiroAssistant() {
+    const panel = document.getElementById('amiro-ai-panel');
+    const launcher = document.getElementById('amiro-ai-launch');
+    if (!panel || !launcher) return;
+    panel.classList.remove('hidden');
+    document.body.classList.add('amiro-ai-open');
+    launcher.setAttribute('aria-expanded', 'true');
+    requestAnimationFrame(() => document.getElementById('amiro-ai-input')?.focus());
+}
+
+function closeAmiroAssistant() {
+    document.getElementById('amiro-ai-panel')?.classList.add('hidden');
+    document.body.classList.remove('amiro-ai-open');
+    document.getElementById('amiro-ai-launch')?.setAttribute('aria-expanded', 'false');
+}
+
+function minimizeAmiroAssistant() {
+    closeAmiroAssistant();
+}
+
+function resetAmiroAssistant() {
+    const messages = document.getElementById('amiro-ai-messages');
+    const welcome = document.getElementById('amiro-ai-welcome');
+    const input = document.getElementById('amiro-ai-input');
+    if (messages) {
+        messages.replaceChildren();
+        messages.classList.add('hidden');
+    }
+    if (welcome) welcome.classList.remove('hidden');
+    if (input) { input.value = ''; input.style.height = ''; }
+}
+
+function appendAmiroAssistantMessage(role, message, route = null, actionLabel = '') {
+    const messages = document.getElementById('amiro-ai-messages');
+    const welcome = document.getElementById('amiro-ai-welcome');
+    if (!messages) return;
+    welcome?.classList.add('hidden');
+    messages.classList.remove('hidden');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = `amiro-ai-message ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'amiro-ai-message-bubble';
+    bubble.textContent = message;
+    wrapper.appendChild(bubble);
+
+    if (route) {
+        const action = document.createElement('button');
+        action.type = 'button';
+        action.className = 'amiro-ai-message-action';
+        action.textContent = actionLabel || `Open ${route === 'items' ? 'Products' : route.charAt(0).toUpperCase() + route.slice(1)}`;
+        action.addEventListener('click', () => {
+            closeAmiroAssistant();
+            navigateTo(route);
+        });
+        wrapper.appendChild(action);
+    }
+
+    const time = document.createElement('span');
+    time.className = 'amiro-ai-message-time';
+    time.textContent = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    wrapper.appendChild(time);
+    messages.appendChild(wrapper);
+    messages.scrollTop = messages.scrollHeight;
+    return wrapper;
+}
+
+function amiroAssistantList(response) {
+    return Array.isArray(response) ? response : (Array.isArray(response?.items) ? response.items : []);
+}
+
+function amiroAssistantModule(message) {
+    const q = message.toLowerCase();
+    const modules = [
+        ['dashboard', ['dashboard', 'overview', 'home']],
+        ['items', ['product', 'products', 'equipment', 'instrument', 'instruments']],
+        ['stock', ['stock', 'inventory', 'consumable', 'consumables', 'accessories']],
+        ['categories', ['category', 'categories']],
+        ['transfers', ['transfer', 'transfers']],
+        ['locations', ['location', 'locations', 'site', 'sites', 'branch', 'branches']],
+        ['compliance', ['compliance', 'calibration', 'maintenance', 'service history']],
+        ['logs', ['audit log', 'audit logs', 'activity log', 'activity logs']],
+        ['users', ['user management', 'users', 'accounts', 'roles']],
+    ];
+    return modules.find(([, keywords]) => keywords.some(keyword => q.includes(keyword)))?.[0] || null;
+}
+
+function amiroAssistantRouteRequest(message) {
+    if (!/^(open|go to|take me to|navigate to)\b/i.test(message.trim())) return null;
+    return amiroAssistantModule(message);
+}
+
+async function answerAmiroAssistant(message) {
+    const q = message.toLowerCase().trim();
+    const isNonEnglish = Array.from(message).some(character => /\p{L}/u.test(character) && !/\p{Script=Latin}/u.test(character));
+    if (isNonEnglish) return { text: 'Amiro Intelligence currently supports English questions only. Please ask again in English.' };
+
+    const routeRequest = amiroAssistantRouteRequest(message);
+    if (routeRequest) return { text: `I can open the ${routeRequest === 'items' ? 'Products' : routeRequest.charAt(0).toUpperCase() + routeRequest.slice(1)} module for you.`, route: routeRequest };
+
+    if (/\b(what can you do|help|capabilities|what do you help|how can you help)\b/.test(q)) {
+        return { text: 'I can answer questions using Amiro IMS data for products, stock, locations, transfers, and equipment compliance. I can also explain how to use these modules. I only handle this application and respond in English.' };
+    }
+    if (/\b(what (services|does this app|does amiro|is this application)|about (the )?(company|application|app)|company details)\b/.test(q)) {
+        return { text: 'This is Amiro Tech Solutions’ Inventory Management System. It manages products and serialized equipment, quantity based stock, locations, transfers, calibration and compliance, user access, and audit activity.' };
+    }
+    if (/\b(invoice|invoices|client|clients|project|projects|quotation|quotations|expense|expenses|crm)\b/.test(q)) {
+        return { text: 'That information is not part of the available Amiro IMS modules, so I can’t look it up here. I can help with products, stock, locations, transfers, and equipment compliance.' };
+    }
+
+    if (/\b(how|steps|add|create|register)\b/.test(q) && /\b(product|equipment|instrument)\b/.test(q)) {
+        return { text: 'To add a product: open Products, choose Add Product, select an equipment or instrument type, enter its name and serial number, choose a location and acquired date, then select Create Product.', route: 'items', actionLabel: 'Open Products' };
+    }
+    if (/\b(how|steps|request|create|make)\b/.test(q) && /\b(transfer|move stock|move equipment)\b/.test(q)) {
+        return { text: 'To request a transfer: open Transfers, select New Transfer Request, choose the item and destination, enter the quantity or equipment details, and submit the request. You can then track its status in My Requests.', route: 'transfers', actionLabel: 'Open Transfers' };
+    }
+    if (/\b(how|steps|record|add)\b/.test(q) && /\b(calibration|calibrate)\b/.test(q)) {
+        return { text: 'Open Compliance to review equipment and calibration status. To add a calibration record, open Products, choose the instrument, and use its calibration action. The app records the calibration date, due date, and certificate details.', route: 'compliance', actionLabel: 'Open Compliance' };
+    }
+    if (/\b(how|steps|receive|issue|adjust|add)\b/.test(q) && /\b(stock|inventory|consumable|accessory|accessories)\b/.test(q)) {
+        const action = /\breceive\b/.test(q) ? 'receive' : /\bissue\b/.test(q) ? 'issue' : /\badjust\b/.test(q) ? 'adjust' : 'add';
+        const instructions = {
+            receive: 'To receive stock: open Stock Levels, select the location, choose Receive Stock, select the item, enter quantity and supplier or invoice details, then save the receipt.',
+            issue: 'To issue stock: open Stock Levels, select the location, choose Issue Stock, select the item and quantity, enter the issue details, then save.',
+            adjust: 'To adjust a balance: open Stock Levels, choose Adjust Stock, select the item and location, enter the corrected quantity and reason, then save the adjustment.',
+            add: 'To add a stock item: open Stock Levels, choose Add Stock Item, enter its category, name, unit, location, and opening quantity, then save.'
+        };
+        return { text: instructions[action], route: 'stock', actionLabel: 'Open Stock Levels' };
+    }
+    if (/\b(how|steps|add|create|manage)\b/.test(q) && /\b(category|categories)\b/.test(q)) {
+        return { text: 'To create a category: open Categories, choose Add Category, enter its name and description, choose serialized or quantity based stock handling, then save.', route: 'categories', actionLabel: 'Open Categories' };
+    }
+    if (/\b(how|steps|add|create|manage)\b/.test(q) && /\b(location|locations|branch|site)\b/.test(q)) {
+        return { text: 'To add a location: open Locations, choose Add Location, enter its name and site details, then save. You can edit the location later to update its contacts or address.', route: 'locations', actionLabel: 'Open Locations' };
+    }
+    if (/\b(how|steps|add|create|invite)\b/.test(q) && /\b(user|users|account|accounts)\b/.test(q)) {
+        return { text: 'To add an account: open User Management, choose Add User, enter the person’s details, assign an appropriate role, and save. Available roles and access depend on your account permissions.', route: 'users', actionLabel: 'Open User Management' };
+    }
+    if (/\b(dashboard|overview|summary|how many (products|items|locations)|total (products|equipment|locations))\b/.test(q)) {
+        try {
+            const stats = await DashboardAPI.getStats();
+            return { text: `Current Amiro IMS overview:\n• Serialized equipment and instruments: ${Number(stats.total_assets || 0).toLocaleString('en-IN')}\n• Active locations: ${Number(stats.total_locations || 0).toLocaleString('en-IN')}\n• Low stock items: ${Number(stats.low_stock_count || 0).toLocaleString('en-IN')}\n• Calibration alerts: ${Number(stats.calibration_expired || 0) + Number(stats.calibration_due_soon || 0)}.`, route: 'dashboard', actionLabel: 'Open Dashboard' };
+        } catch (_) { return { text: 'I couldn’t load the dashboard summary just now. Please refresh the Dashboard and try again.', route: 'dashboard', actionLabel: 'Open Dashboard' }; }
+    }
+    if (/\b(low stock|below reorder|reorder|stock alert|out of stock)\b/.test(q)) {
+        try {
+            const items = amiroAssistantList(await DashboardAPI.getLowStockItems(10));
+            if (!items.length) return { text: 'There are no low stock items in the current Amiro IMS results.' , route: 'stock', actionLabel: 'Open Stock Levels' };
+            const lines = items.slice(0, 8).map(item => `• ${item.name || item.item_name || 'Item'}: ${item.current_quantity ?? item.available ?? 0} available / reorder at ${item.reorder_point ?? '—'} · ${item.location_name || 'Location not listed'}`);
+            return { text: `Low stock items (${items.length} shown):\n${lines.join('\n')}`, route: 'stock', actionLabel: 'Open Stock Levels' };
+        } catch (_) { return { text: 'I couldn’t load low stock data. Check your Stock Levels access and try again.', route: 'stock', actionLabel: 'Open Stock Levels' }; }
+    }
+    if (/\b(stock|inventory|quantity|available balance)\b/.test(q)) {
+        try {
+            const stockRows = amiroAssistantList(await StockAPI.getAll({ page_size: 100 }));
+            const words = q.replace(/\b(show|list|find|search|look up|stock|stocks|inventory|quantity|available|balance|levels|level|how|much|do|we|have|the|for|what|which|is|are|at|in|on|of|location|can|could|would|you|me|please|tell)\b/g, ' ').trim().split(/\s+/).filter(word => word.length > 1);
+            const matches = words.length
+                ? stockRows.filter(item => words.some(word => [item.name, item.item_name, item.sku, item.location_name].some(value => String(value || '').toLowerCase().includes(word))))
+                : stockRows;
+            if (!matches.length) return { text: 'I couldn’t find a matching stock record. Try the item name, product code, or location.', route: 'stock', actionLabel: 'Open Stock Levels' };
+            return { text: `Stock records (${matches.length} matching):\n${matches.slice(0, 8).map(item => `• ${item.name || item.item_name || 'Item'} · ${item.available ?? item.current_quantity ?? item.closing_balance ?? 0} available · ${item.location_name || 'Location not listed'}${item.reorder_point != null ? ` · alert at ${item.reorder_point}` : ''}`).join('\n')}`, route: 'stock', actionLabel: 'Open Stock Levels' };
+        } catch (_) { return { text: 'I couldn’t load stock records with your current account. Open Stock Levels and try refreshing the list.', route: 'stock', actionLabel: 'Open Stock Levels' }; }
+    }
+    if (/\b(calibration|calibrations|due date|overdue calibration|expired calibration)\b/.test(q)) {
+        try {
+            const alerts = amiroAssistantList(await DashboardAPI.getCalibrationAlerts(365));
+            if (!alerts.length) return { text: 'There are no calibration alerts in the current Amiro IMS results.', route: 'compliance', actionLabel: 'Open Compliance' };
+            const lines = alerts.slice(0, 8).map(item => `• ${item.asset_name || item.item_name || item.serial_number || 'Equipment'} · ${item.location_name || 'Location not listed'} · due ${item.due_date || 'date not listed'} · ${item.status || (item.days_until_due < 0 ? 'expired' : 'due soon')}`);
+            return { text: `Calibration alerts (${alerts.length} shown):\n${lines.join('\n')}`, route: 'compliance', actionLabel: 'Open Compliance' };
+        } catch (_) { return { text: 'I couldn’t load calibration data. Open Compliance and try refreshing the page.', route: 'compliance', actionLabel: 'Open Compliance' }; }
+    }
+    if (/\b(compliance|blocked|maintenance|service history|equipment status|all clear)\b/.test(q)) {
+        try {
+            const overview = await TransfersAPI.getEquipmentOverview();
+            const equipment = Array.isArray(overview.items) ? overview.items : [];
+            const calibrationIssues = Array.isArray(overview.calibration_issues) ? overview.calibration_issues : [];
+            const maintenanceIssues = Array.isArray(overview.maintenance_issues) ? overview.maintenance_issues : [];
+            const blocked = equipment.filter(item => !item.can_transfer).length;
+            const clear = equipment.length - blocked;
+            return { text: `Current equipment compliance summary:\n• Total equipment: ${equipment.length}\n• Blocked: ${blocked}\n• Calibration issues: ${calibrationIssues.length}\n• Under maintenance: ${maintenanceIssues.length}\n• All clear: ${clear}.`, route: 'compliance', actionLabel: 'Open Compliance' };
+        } catch (_) { return { text: 'I couldn’t load the compliance summary with your current account. Open Compliance to review the available records.', route: 'compliance', actionLabel: 'Open Compliance' }; }
+    }
+    if (/\b(location|locations|branches|sites)\b/.test(q)) {
+        try {
+            const locations = amiroAssistantList(await LocationsAPI.getAll({ is_active: true, page_size: 100 }));
+            if (!locations.length) return { text: 'No active locations were returned from Amiro IMS.' , route: 'locations', actionLabel: 'Open Locations' };
+            return { text: `Active locations (${locations.length}):\n${locations.slice(0, 10).map(location => `• ${location.name}${location.city ? ` · ${location.city}` : ''}`).join('\n')}`, route: 'locations', actionLabel: 'Open Locations' };
+        } catch (_) { return { text: 'I couldn’t load locations with your current account. You can open the Locations module if it is available to your role.', route: 'locations', actionLabel: 'Open Locations' }; }
+    }
+    if (/\b(category|categories)\b/.test(q)) {
+        try {
+            const categories = amiroAssistantList(await CategoriesAPI.getAll());
+            return { text: categories.length ? `Product categories (${categories.length}):\n${categories.slice(0, 12).map(category => `• ${category.name} · ${category.stock_behavior || 'handling not listed'}`).join('\n')}` : 'No categories were returned from Amiro IMS.', route: 'categories', actionLabel: 'Open Categories' };
+        } catch (_) { return { text: 'I couldn’t load categories with your current account.', route: 'categories', actionLabel: 'Open Categories' }; }
+    }
+    if (/\b(recent activity|recent transactions|receipts|issues|stock movement)\b/.test(q)) {
+        try {
+            const activity = amiroAssistantList(await DashboardAPI.getRecentTransactions(8));
+            if (!activity.length) return { text: 'There is no recent stock activity in the current results.', route: 'dashboard', actionLabel: 'Open Dashboard' };
+            return { text: `Recent stock activity:\n${activity.slice(0, 8).map(item => `• ${(item.action || 'Activity').replace(/_/g, ' ')} · ${item.item_name || item.name || 'Item'} · ${item.location_name || 'Location not listed'} · ${item.created_at ? new Date(item.created_at).toLocaleDateString('en-IN') : 'date not listed'}`).join('\n')}`, route: 'dashboard', actionLabel: 'Open Dashboard' };
+        } catch (_) { return { text: 'I couldn’t load recent stock activity. Please refresh the Dashboard and try again.', route: 'dashboard', actionLabel: 'Open Dashboard' }; }
+    }
+    if (/\b(transfer|transfers|pending request|in transit)\b/.test(q)) {
+        try {
+            const transfers = amiroAssistantList(await TransfersAPI.getAll({ page_size: 20 }));
+            if (!transfers.length) return { text: 'No transfers were returned from Amiro IMS for your account.', route: 'transfers', actionLabel: 'Open Transfers' };
+            return { text: `Transfers (${transfers.length} recent results):\n${transfers.slice(0, 8).map(item => `• ${item.transfer_number || item.request_number || 'Transfer'} · ${item.status || 'status not listed'} · ${item.source_location_name || item.from_location_name || '—'} → ${item.destination_location_name || item.to_location_name || '—'}`).join('\n')}`, route: 'transfers', actionLabel: 'Open Transfers' };
+        } catch (_) { return { text: 'I couldn’t load transfer records with your current account.', route: 'transfers', actionLabel: 'Open Transfers' }; }
+    }
+    if (/\b(product|products|equipment|instrument|serial number|serial no)\b/.test(q)) {
+        try {
+            const products = await AssetsAPI.getAllPages({});
+            const searchWords = q.replace(/\b(show|list|find|search|look up|product|products|equipment|instrument|instruments|serial number|serial no|details|about|have|do|we|the|for|what|which|is|are|can|could|would|you|me|please|tell|any|a|an|of|in|at)\b/g, ' ').trim().split(/\s+/).filter(word => word.length > 1);
+            const matches = searchWords.length
+                ? products.filter(product => searchWords.some(word => [product.item_name, product.name, product.serial_number, product.serial_no, product.sku, product.location_name].some(value => String(value || '').toLowerCase().includes(word))))
+                : products;
+            if (!matches.length) return { text: 'I couldn’t find a matching product in the current Amiro IMS records. Try its name, serial number, or product code.', route: 'items', actionLabel: 'Open Products' };
+            return { text: `Products matching your question (${matches.length}):\n${matches.slice(0, 8).map(product => `• ${product.item_name || product.name || 'Product'} · ${product.serial_number || product.serial_no || product.sku || 'no serial listed'} · ${product.location_name || 'location not listed'}`).join('\n')}`, route: 'items', actionLabel: 'Open Products' };
+        } catch (_) { return { text: 'I couldn’t load product records with your current account. Try opening Products and refreshing the list.', route: 'items', actionLabel: 'Open Products' }; }
+    }
+
+    return { text: 'I can help with Amiro IMS only: products, stock, locations, categories, transfers, calibration, compliance, and dashboard activity. Ask a question about one of those areas, or use one of the suggested questions.' };
+}
+
+async function sendAmiroAssistantMessage(question = null) {
+    const input = document.getElementById('amiro-ai-input');
+    const sendButton = document.getElementById('amiro-ai-send');
+    const message = String(question ?? input?.value ?? '').trim();
+    if (!message || sendButton?.disabled) return;
+    appendAmiroAssistantMessage('user', message);
+    if (input) { input.value = ''; input.style.height = ''; }
+    if (sendButton) sendButton.disabled = true;
+
+    const typing = appendAmiroAssistantMessage('assistant amiro-ai-typing', 'Checking Amiro IMS…');
+    try {
+        const answer = await answerAmiroAssistant(message);
+        typing?.remove();
+        appendAmiroAssistantMessage('assistant', answer.text, answer.route, answer.actionLabel);
+    } catch (error) {
+        typing?.remove();
+        appendAmiroAssistantMessage('assistant', 'I couldn’t complete that Amiro IMS lookup. Please try again or open the relevant module.');
+        console.warn('Amiro Intelligence lookup failed:', error?.message || error);
+    } finally {
+        if (sendButton) sendButton.disabled = false;
+        input?.focus();
+    }
 }
 
 

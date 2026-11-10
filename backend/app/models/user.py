@@ -22,6 +22,7 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     HEAD_OFFICE_MANAGER = "head_office_manager"
     LOCATION_MANAGER = "location_manager"
+    DEMO_USER = "demo_user"
 
 
 # Association table for user-location assignments
@@ -93,8 +94,12 @@ class User(Base):
     
     @property
     def has_all_location_access(self) -> bool:
-        """Check if user can access all locations (admin or head office manager)."""
-        return self.role in (UserRole.ADMIN, UserRole.HEAD_OFFICE_MANAGER)
+        """Check whether the role reads across all locations."""
+        return self.role in (
+            UserRole.ADMIN,
+            UserRole.HEAD_OFFICE_MANAGER,
+            UserRole.DEMO_USER,
+        )
     
     def has_location_access(self, location_id: str) -> bool:
         """Check if user has access to a specific location."""

@@ -134,11 +134,11 @@ async def seed_categories(db: AsyncSession) -> None:
         return
 
     categories_data = [
-        {"name": "Ultrasonic Testing Equipment",         "description": "UT instruments and probes"},
-        {"name": "Magnetic Particle Testing Equipment",  "description": "MPT yokes, powders and inks"},
-        {"name": "Liquid Penetrant Testing Supplies",    "description": "PT penetrants, developers and cleaners"},
-        {"name": "Calibration Standards",                "description": "Reference blocks and calibration standards"},
-        {"name": "General Consumables",                  "description": "Cleaning solvents, tapes and general supplies"},
+        {"name": "Ultrasonic Inspection",       "description": "Synthetic demo instruments, probes, and couplants"},
+        {"name": "Magnetic Particle Inspection", "description": "Synthetic demo yokes, powders, and inks"},
+        {"name": "Penetrant Inspection Supplies", "description": "Synthetic demo penetrants, developers, and cleaners"},
+        {"name": "Calibration References",      "description": "Synthetic demo reference blocks and standards"},
+        {"name": "Laboratory Consumables",      "description": "Synthetic demo cleaning and inspection supplies"},
     ]
 
     for cat in categories_data:
@@ -168,18 +168,20 @@ async def seed_sample_items(db: AsyncSession) -> None:
         logger.warning("Missing categories or locations, skipping item seed")
         return
 
-    ut  = cat_map.get("Ultrasonic Testing Equipment")
-    mpt = cat_map.get("Magnetic Particle Testing Equipment")
-    pt  = cat_map.get("Liquid Penetrant Testing Supplies")
-    cal = cat_map.get("Calibration Standards")
-    con = cat_map.get("General Consumables")
+    ut  = cat_map.get("Ultrasonic Inspection")
+    mpt = cat_map.get("Magnetic Particle Inspection")
+    pt  = cat_map.get("Penetrant Inspection Supplies")
+    cal = cat_map.get("Calibration References")
+    con = cat_map.get("Laboratory Consumables")
 
     items_data = [
         # --- Serialized equipment (tracked per unit, calibration required, returnable on equipment transfers) ---
         {
             "sku": "UT-EPOCH650",
-            "name": "Olympus EPOCH 650 Flaw Detector",
-            "description": "Portable ultrasonic flaw detector",
+            "name": "Asterion UT-650 Digital Flaw Detector",
+            "description": "Synthetic portable ultrasonic flaw detector for demo inspections",
+            "manufacturer": "Asterion Instruments",
+            "model": "UT-650",
             "category_id": ut,
             "unit_of_measure": "each",
             "is_serialized": True,
@@ -189,8 +191,10 @@ async def seed_sample_items(db: AsyncSession) -> None:
         },
         {
             "sku": "MPT-YOKE-ACDC",
-            "name": "Portable Yoke — AC/DC Electromagnetic",
-            "description": "Portable electromagnetic yoke for MPT inspection",
+            "name": "NovaMPT AC/DC Inspection Yoke",
+            "description": "Synthetic portable electromagnetic yoke for demo inspections",
+            "manufacturer": "NovaMPT Labs",
+            "model": "NX-220",
             "category_id": mpt,
             "unit_of_measure": "each",
             "is_serialized": True,
@@ -200,8 +204,10 @@ async def seed_sample_items(db: AsyncSession) -> None:
         },
         {
             "sku": "CAL-V1-BLOCK",
-            "name": "V1 Calibration Block (IIW Type 1)",
-            "description": "Standard V1 block for UT calibration",
+            "name": "Calibrex V1 Reference Block",
+            "description": "Synthetic IIW Type 1 reference block for calibration demos",
+            "manufacturer": "Calibrex Standards",
+            "model": "V1-D",
             "category_id": cal,
             "unit_of_measure": "each",
             "is_serialized": True,
@@ -212,16 +218,20 @@ async def seed_sample_items(db: AsyncSession) -> None:
         # --- Consumables ---
         {
             "sku": "UT-COUPLANT-500",
-            "name": "Ultrasonic Couplant Gel 500ml",
-            "description": "Water-based couplant gel for UT",
+            "name": "SonoGlide Couplant Gel 500ml",
+            "description": "Synthetic water-based couplant gel for UT demonstrations",
+            "manufacturer": "SonoPure Labs",
+            "model": "SG-500",
             "category_id": ut,
             "unit_of_measure": "bottle",
             "standard_cost": 350.00,
         },
         {
             "sku": "PT-ZL27A",
-            "name": "Penetrant Dye — Zyglo ZL-27A",
-            "description": "Fluorescent penetrant for crack detection",
+            "name": "FluoroSense Visible Penetrant 400ml",
+            "description": "Synthetic fluorescent penetrant for demo crack detection",
+            "manufacturer": "FluoroSense",
+            "model": "FS-P4",
             "category_id": pt,
             "unit_of_measure": "can",
             "has_expiry": True,
@@ -230,8 +240,10 @@ async def seed_sample_items(db: AsyncSession) -> None:
         },
         {
             "sku": "PT-SKCS",
-            "name": "Cleaner/Remover — SKC-S",
-            "description": "Solvent cleaner for penetrant removal",
+            "name": "ClearPath Cleaner and Remover 400ml",
+            "description": "Synthetic cleaner for penetrant inspection demonstrations",
+            "manufacturer": "ClearPath Materials",
+            "model": "CP-C2",
             "category_id": pt,
             "unit_of_measure": "can",
             "has_expiry": True,
@@ -240,44 +252,67 @@ async def seed_sample_items(db: AsyncSession) -> None:
         },
         {
             "sku": "CON-IPA-1L",
-            "name": "Isopropyl Alcohol 99% (1L)",
-            "description": "High purity IPA for surface cleaning",
+            "name": "PureLab Isopropyl Alcohol 99% (1L)",
+            "description": "Synthetic high-purity surface cleaner for demo records",
+            "manufacturer": "PureLab Supply Co.",
+            "model": "PL-IPA-1",
             "category_id": con,
             "unit_of_measure": "bottle",
             "standard_cost": 320.00,
         },
         {
             "sku": "MPT-POWDER-BLK",
-            "name": "Magnetic Particle Powder — Black",
-            "description": "Dry magnetic powder for visible light MPT inspection",
+            "name": "NovaMPT Black Magnetic Powder (1kg)",
+            "description": "Synthetic dry powder for visible-light MPT demonstrations",
+            "manufacturer": "NovaMPT Labs",
+            "model": "NP-B1",
             "category_id": mpt,
             "unit_of_measure": "kg",
             "standard_cost": 850.00,
         },
     ]
 
-    # BLR = 15 units, MNG = 8, HYD = 6
-    location_stock = [15, 8, 6]
+    # Deliberately varied demo quantities make the dashboard and stock alerts
+    # useful during a client walkthrough (including a few low-stock examples).
+    stock_by_sku = {
+        "UT-EPOCH650": [2, 1, 1],
+        "MPT-YOKE-ACDC": [3, 2, 1],
+        "CAL-V1-BLOCK": [2, 2, 1],
+        "UT-COUPLANT-500": [18, 4, 7],
+        "PT-ZL27A": [3, 9, 2],
+        "PT-SKCS": [12, 2, 6],
+        "CON-IPA-1L": [5, 14, 3],
+        "MPT-POWDER-BLK": [2, 6, 11],
+    }
 
     for item_data in items_data:
         item_id = str(uuid.uuid4())
         db.add(Item(id=item_id, is_active=True, **item_data))
         await db.flush()
 
+        # Serialized instruments are tracked as individual assets. Quantity
+        # stock rows are only for consumables and accessories.
+        if item_data.get("is_serialized"):
+            continue
+
         for idx, loc in enumerate(locations):
-            qty = location_stock[idx] if idx < len(location_stock) else 5
+            qty = stock_by_sku.get(item_data["sku"], [5, 5, 5])[idx] if idx < len(locations) else 5
             db.add(Stock(
                 id=str(uuid.uuid4()),
                 item_id=item_id,
                 location_id=loc.id,
                 quantity_on_hand=qty,
                 quantity_reserved=0,
-                reorder_point=5,
-                reorder_quantity=10,
+                min_level=3,
+                reorder_point=4,
+                reorder_quantity=8,
+                max_level=30,
+                bin_location=f"{loc.code[:3]}-{idx + 1:02d}",
             ))
 
     await db.commit()
-    logger.info(f"Seeded {len(items_data)} items with stock at {len(locations)} locations")
+    quantity_items = sum(1 for item in items_data if not item.get("is_serialized"))
+    logger.info(f"Seeded {quantity_items} quantity-tracked items with stock at {len(locations)} locations")
 
 
 # ---------------------------------------------------------------------------

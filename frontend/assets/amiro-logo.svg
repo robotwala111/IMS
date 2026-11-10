@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Amiro Tech Solutions">
+  <rect x="5" y="5" width="182" height="182" rx="45" fill="#f4b000"/>
+  <rect x="24" y="24" width="144" height="144" rx="27" fill="#050608"/>
+  <path d="M96 53 123 101h-13L96 77 82 101H69l27-48Z" fill="#f4b000"/>
+  <path d="m96 65 19 34h-8l-11-20-11 20h-8l19-34Z" fill="#fff"/>
+  <path d="m95 91 19 11H77l18-11Z" fill="#fff"/>
+  <text x="96" y="123" fill="#fff" font-family="Arial,sans-serif" font-size="19" font-weight="700" text-anchor="middle">Amiro Tech</text>
+  <text x="96" y="139" fill="#f4b000" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="3" text-anchor="middle">SOLUTIONS</text>
+</svg>

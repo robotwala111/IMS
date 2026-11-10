@@ -30,6 +30,8 @@ from app.api.v1.endpoints import (
     archive,
     branding,
     generated_documents,
+    demo_requests,
+    demo_bookings,
 )
 
 api_router = APIRouter()
@@ -190,4 +192,16 @@ api_router.include_router(
     branding.router,
     prefix="/branding",
     tags=["Branding"],
+)
+
+api_router.include_router(
+    demo_requests.router,
+    prefix="/demo-requests",
+    tags=["Demo Requests"],
+)
+
+api_router.include_router(
+    demo_bookings.router,
+    prefix="/demo-bookings",
+    tags=["Demo Booking"],
 )

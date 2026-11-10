@@ -16,6 +16,7 @@ ASSIGNABLE_USER_ROLES = {
     UserRole.ADMIN,
     UserRole.HEAD_OFFICE_MANAGER,
     UserRole.LOCATION_MANAGER,
+    UserRole.DEMO_USER,
 }
 
 
@@ -40,7 +41,7 @@ class UserCreate(UserBase):
     @classmethod
     def role_must_be_active_business_role(cls, value: UserRole) -> UserRole:
         if value not in ASSIGNABLE_USER_ROLES:
-            raise ValueError("Only Admin, General Manager, and Location Manager roles are allowed")
+            raise ValueError("Select a valid user role")
         return value
 
 
@@ -60,7 +61,7 @@ class UserUpdate(BaseModel):
     @classmethod
     def role_must_be_active_business_role(cls, value: Optional[UserRole]) -> Optional[UserRole]:
         if value is not None and value not in ASSIGNABLE_USER_ROLES:
-            raise ValueError("Only Admin, General Manager, and Location Manager roles are allowed")
+            raise ValueError("Select a valid user role")
         return value
 
 

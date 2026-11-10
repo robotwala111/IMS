@@ -19,6 +19,8 @@ from app.api.v1.endpoints import (
     audit,
     employee_records,
     employees,
+    demo_requests,
+    demo_bookings,
 )
 
 __all__ = [
@@ -40,4 +42,6 @@ __all__ = [
     "audit",
     "employee_records",
     "employees",
+    "demo_requests",
+    "demo_bookings",
 ]

@@ -11,6 +11,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
+from app.core.config import settings
 from app.core.logging import get_logger
 from app.core.security import validate_access_token
 from app.db.session import get_db
@@ -62,6 +63,39 @@ async def get_current_user(
 
     if not await AuthTokenService(db).is_session_active(session_id, user.id):
         raise AuthenticationError(message="Session has expired or was revoked")
+
+    if user.role == UserRole.DEMO_USER:
+        path = request.url.path
+        api_prefix = settings.API_V1_PREFIX.rstrip("/")
+        if path.startswith(api_prefix):
+            path = path[len(api_prefix):] or "/"
+        method = request.method.upper()
+        read_prefixes = (
+            "/dashboard",
+            "/assets",
+            "/categories",
+            "/items",
+            "/maintenance",
+            "/calibration",
+            "/branding",
+        )
+        allowed = method == "GET" and any(
+            path == prefix or path.startswith(prefix + "/")
+            for prefix in read_prefixes
+        )
+        allowed = allowed or (
+            method == "GET" and path == "/transfers/equipment-overview"
+        )
+        allowed = allowed or (
+            method == "GET" and path in {"/users", "/users/me"}
+        )
+        allowed = allowed or (
+            method == "POST" and path in {"/auth/logout", "/auth/refresh"}
+        )
+        if not allowed:
+            raise AuthorizationError(
+                message="Demo accounts can only view Dashboard, Products, Compliance, and User Management"
+            )
     
     # Store user in request state for audit logging
     request.state.current_user = user
@@ -94,6 +128,11 @@ require_admin = RoleChecker([UserRole.ADMIN])
 require_admin_or_ho_manager = RoleChecker([UserRole.ADMIN, UserRole.HEAD_OFFICE_MANAGER])
 require_manager_or_admin = RoleChecker([UserRole.ADMIN, UserRole.HEAD_OFFICE_MANAGER, UserRole.LOCATION_MANAGER])
 require_any_role = RoleChecker([UserRole.ADMIN, UserRole.HEAD_OFFICE_MANAGER, UserRole.LOCATION_MANAGER])
+require_user_list_access = RoleChecker([
+    UserRole.ADMIN,
+    UserRole.HEAD_OFFICE_MANAGER,
+    UserRole.DEMO_USER,
+])
 
 
 class LocationAccessChecker:

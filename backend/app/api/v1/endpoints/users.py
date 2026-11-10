@@ -16,6 +16,7 @@ from app.api.v1.dependencies import (
     require_admin,
     require_admin_or_ho_manager,
     require_manager_or_admin,
+    require_user_list_access,
 )
 from app.core.exceptions import NotFoundError, ConflictError, BadRequestError, AuthorizationError
 from app.core.logging import get_logger
@@ -183,14 +184,16 @@ async def list_users(
     role: Optional[UserRole] = Query(None),
     is_active: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
-    _: None = Depends(require_admin_or_ho_manager),
+    _: None = Depends(require_user_list_access),
 ) -> UserListResponse:
     """
     List all users (Admin only).
     """
     user_service = UserService(db)
     
-    if current_user.role == UserRole.HEAD_OFFICE_MANAGER and role not in (
+    if current_user.role == UserRole.DEMO_USER:
+        role = UserRole.DEMO_USER
+    elif current_user.role == UserRole.HEAD_OFFICE_MANAGER and role not in (
         None,
         UserRole.LOCATION_MANAGER,
     ):
@@ -204,7 +207,9 @@ async def list_users(
         sort_by=pagination["sort_by"],
         sort_order=pagination["sort_order"],
         role=(
-            UserRole.LOCATION_MANAGER
+            UserRole.DEMO_USER
+            if current_user.role == UserRole.DEMO_USER
+            else UserRole.LOCATION_MANAGER
             if current_user.role == UserRole.HEAD_OFFICE_MANAGER
             else role
         ),
