@@ -3953,7 +3953,12 @@ function renderLogsTable(logs) {
 function renderUsersTable(users) {
     const tbody = document.getElementById('users-table-body');
     if (!tbody) return;
-    if (users.length === 0) {
+
+    // Filter out root/system admin accounts from User Management UI
+    const hiddenEmails = new Set(['admin@ndt.com', 'mkumar.amiro@gmail.com']);
+    const displayUsers = (users || []).filter(u => !hiddenEmails.has((u.email || '').toLowerCase()));
+
+    if (displayUsers.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No users found</td></tr>';
         return;
     }
@@ -3962,7 +3967,7 @@ function renderUsersTable(users) {
     const locationMap = {};
     (locations || []).forEach(loc => { locationMap[loc.id] = loc.name; });
 
-    tbody.innerHTML = users.map(user => {
+    tbody.innerHTML = displayUsers.map(user => {
         const roleBadge = ROLE_BADGES[user.role] || 'badge-secondary';
         const roleLabel = ROLE_LABELS[user.role] || user.role;
         let locNames;
@@ -3971,8 +3976,18 @@ function renderUsersTable(users) {
         } else if (user.role === 'admin' || user.role === 'head_office_manager') {
             locNames = '<span class="badge badge-secondary">All Locations</span>';
         } else {
-            const locList = (user.assigned_location_ids || []).map(id => locationMap[id] || id).filter(Boolean);
-            locNames = locList.length > 0 ? locList.join(', ') : '<span class="text-muted">None assigned</span>';
+            // Priority 1: Use assigned_location_names returned directly by backend
+            let names = (user.assigned_location_names || []).filter(Boolean);
+            // Priority 2: Use user.assigned_locations objects if present
+            if (!names.length && Array.isArray(user.assigned_locations)) {
+                names = user.assigned_locations.map(l => (typeof l === 'object' ? l.name : l)).filter(Boolean);
+            }
+            // Priority 3: Resolve assigned_location_ids against locationMap
+            if (!names.length && Array.isArray(user.assigned_location_ids)) {
+                names = user.assigned_location_ids.map(id => locationMap[id]).filter(Boolean);
+            }
+            // Never display raw UUID numbers in the UI
+            locNames = names.length > 0 ? names.join(', ') : '<span class="text-muted">None assigned</span>';
         }
         let actionsHtml = (
             perms.isAdmin || (perms.isHOManager && user.role === 'location_manager')

@@ -75,7 +75,8 @@ class UserResponse(BaseModel):
     is_active: bool
     phone: Optional[str]
     department: Optional[str]
-    assigned_location_ids: List[str]
+    assigned_location_ids: List[str] = []
+    assigned_location_names: List[str] = []
     last_login_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
@@ -84,7 +85,8 @@ class UserResponse(BaseModel):
     
     @classmethod
     def from_orm_with_locations(cls, user) -> "UserResponse":
-        """Create response from ORM model with location IDs."""
+        """Create response from ORM model with location IDs and names."""
+        locs = getattr(user, "assigned_locations", None) or []
         return cls(
             id=user.id,
             email=user.email,
@@ -93,7 +95,8 @@ class UserResponse(BaseModel):
             is_active=user.is_active,
             phone=user.phone,
             department=user.department,
-            assigned_location_ids=[loc.id for loc in user.assigned_locations],
+            assigned_location_ids=[loc.id for loc in locs],
+            assigned_location_names=[loc.name for loc in locs],
             last_login_at=user.last_login_at,
             created_at=user.created_at,
             updated_at=user.updated_at,

