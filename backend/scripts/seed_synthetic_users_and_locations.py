@@ -235,7 +235,7 @@ for u in synthetic_users:
         user_id = existing[0]
         cur.execute(
             "UPDATE users SET name=?, role=?, phone=?, department=?, is_active=?, updated_at=? WHERE id=?",
-            (u["name"], u["role"], u["phone"], u["department"], u["is_active"], now, user_id),
+            (u["name"], u["role"].upper(), u["phone"], u["department"], u["is_active"], now, user_id),
         )
         print(f"  Updated user: {u['name']} ({u['email']}) [{u['role']}]")
     else:
@@ -243,7 +243,7 @@ for u in synthetic_users:
         cur.execute(
             """INSERT INTO users (id, email, name, password_hash, role, is_active, phone, department, failed_login_attempts, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)""",
-            (user_id, u["email"], u["name"], default_pwd_hash, u["role"], u["is_active"], u["phone"], u["department"], now, now),
+            (user_id, u["email"], u["name"], default_pwd_hash, u["role"].upper(), u["is_active"], u["phone"], u["department"], now, now),
         )
         print(f"  Created user: {u['name']} ({u['email']}) [{u['role']}]")
 
