@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Amiro Tech Solutions — Enterprise Operations">
+    <meta name="theme-color" content="#f4b000">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <title>Amiro Tech Solutions — Inventory Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='none'%3E%3Cg transform='translate(-11.38 25.2) scale(1.18)'%3E%3Cpath d='M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z' fill='%23F4B400'/%3E%3Cpath d='M98 8L146 92H120L85 31L98 8Z' fill='%232A2C31'/%3E%3Cpath d='M92 64L108 92H135L119 64H92Z' fill='%232A2C31'/%3E%3Cpath d='M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z' fill='%23F8F8F8'/%3E%3C/g%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/enterprise.css?v=20260419-02">
+    <link rel="stylesheet" href="css/styles.css?v=20261111-users-locations-v17">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            try {
+                var search = window.location.search;
+                if (search && (search.indexOf('demo=1') !== -1 || new URLSearchParams(search).get('demo') === '1')) {
+                    document.documentElement.classList.add('demo-loading');
+                }
+            } catch (_) {}
+        })();
+    </script>
+    <style>
+        html.demo-loading #login-page {
+            display: none !important;
+        }
+        #demo-loading-splash {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0b1120;
+            color: #ffffff;
+            z-index: 999999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        html.demo-loading #demo-loading-splash {
+            display: flex !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="demo-loading-splash" aria-live="polite" aria-busy="true">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:24px;color:#f4b000;"></i>
+            <span style="font-size:18px;font-weight:600;letter-spacing:-0.01em;">Opening Amiro IMS Demo...</span>
+        </div>
+        <p style="font-size:13px;color:#94a3b8;margin:0;">Launching enterprise workspace without credentials</p>
+    </div>
+    <div id="app">
+        <!-- Login Page -->
+        <div id="login-page" class="login-page">
+            <div class="login-bg">
+                <div class="login-bg-orb login-bg-orb--1"></div>
+                <div class="login-bg-orb login-bg-orb--2"></div>
+                <div class="login-bg-orb login-bg-orb--3"></div>
+            </div>
+            <div class="login-card">
+                <div class="login-brand">
+                    <div class="login-brand-icon">
+                        <svg class="brand-logo-img amiro-wordmark-inline" width="520" height="150" viewBox="0 0 520 150" role="img" aria-label="Amiro Tech Solutions logo" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(24 12)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                            <g transform="translate(184 42)" fill="#F8F8F8" font-family="Inter, Segoe UI, Arial, sans-serif">
+                                <text x="0" y="42" font-size="46" font-weight="800" letter-spacing="-1.2">Amiro Tech</text>
+                                <text x="76" y="92" font-size="26" font-weight="500" letter-spacing="9">SOLUTIONS</text>
+                            </g>
+                        </svg>
+                    </div>
+                    <h1 class="login-brand-name sr-only">Amiro Tech Solutions</h1>
+                    <p class="login-brand-tagline">Enterprise Operations</p>
+                </div>
+
+                <form id="login-form" class="login-form" method="post" autocomplete="on" onsubmit="return false;">
+                    <div class="login-field">
+                        <label for="email">Email</label>
+                        <div class="login-input-box">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" required placeholder="name@company.com" autocomplete="email" autofocus>
+                        </div>
+                    </div>
+                    <div class="login-field">
+                        <div class="login-field-header">
+                            <label for="password">Password</label>
+                            <a href="#" id="forgot-password-link" class="login-forgot">Forgot?</a>
+                        </div>
+                        <div class="login-input-box">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" required placeholder="Enter password" autocomplete="current-password">
+                            <button type="button" id="toggle-password" class="login-eye" tabindex="-1" aria-label="Show password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="login-options">
+                        <label class="login-remember" for="remember-me">
+                            <input type="checkbox" id="remember-me" name="remember-me">
+                            <span class="login-remember-check"></span>
+                            <span>Remember me</span>
+                        </label>
+                    </div>
+
+                    <div id="login-error" class="login-alert"></div>
+
+                    <!-- Lockout countdown -->
+                    <div id="login-lockout" class="login-lockout hidden">
+                        <i class="fas fa-lock"></i>
+                        <div class="login-lockout-text">
+                            <span>Account temporarily locked</span>
+                            <span id="lockout-timer" class="login-lockout-timer"></span>
+                        </div>
+                    </div>
+
+                    <!-- Remaining attempts warning -->
+                    <div id="login-attempts-warning" class="login-attempts-warning hidden">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="attempts-remaining-text"></span>
+                    </div>
+
+                    <button type="submit" id="login-submit-btn" class="login-btn">
+                        <span class="login-btn-text">Sign in</span>
+                        <span class="login-btn-loading hidden"><i class="fas fa-circle-notch fa-spin"></i> Authenticating...</span>
+                        <svg class="login-btn-arrow" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>256-bit encrypted &middot; Enterprise secured</span>
+                </div>
+            </div>
+            <p class="login-copy">&copy; 2026 Scientech. All rights reserved.</p>
+
+            <!-- Forgot Password Modal -->
+            <div id="forgot-password-modal" class="login-modal-overlay hidden">
+                <div class="login-modal-card">
+                    <button type="button" id="forgot-modal-close" class="login-modal-close">&times;</button>
+                    <div id="forgot-step-request">
+                        <div class="login-modal-head">
+                            <div class="login-modal-icon"><i class="fas fa-key"></i></div>
+                            <h3>Reset password</h3>
+                            <p>Enter your email and we'll send reset instructions.</p>
+                        </div>
+                        <form id="forgot-password-form" class="login-form">
+                            <div class="login-field">
+                                <label for="forgot-email">Email</label>
+                                <div class="login-input-box">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" id="forgot-email" required placeholder="name@company.com">
+                                </div>
+                            </div>
+                            <div id="forgot-error" class="login-alert"></div>
+                            <button type="submit" class="login-btn">Send Reset Link</button>
+                        </form>
+                        <a href="#" id="forgot-back-link" class="login-modal-back"><i class="fas fa-arrow-left"></i> Back to sign in</a>
+                    </div>
+                    <div id="forgot-step-sent" class="hidden">
+                        <div class="login-modal-head">
+                            <div class="login-modal-icon login-modal-icon--ok"><i class="fas fa-check-circle"></i></div>
+                            <h3>Check your inbox</h3>
+                            <p>If an account exists for <strong id="forgot-sent-email"></strong>, you'll get instructions shortly.</p>
+                        </div>
+                        <button type="button" id="forgot-done-btn" class="login-btn" style="margin-top:18px;">Back to Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="main-app" class="page hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-brand-lockup">
+                        <svg class="sidebar-brand-logo sidebar-brand-logo--wordmark" width="520" height="150" viewBox="0 0 520 150" role="img" aria-label="Amiro Tech Solutions logo" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(24 12)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                            <g transform="translate(184 42)" fill="#F8F8F8" font-family="Inter, Segoe UI, Arial, sans-serif">
+                                <text x="0" y="42" font-size="46" font-weight="800" letter-spacing="-1.2">Amiro Tech</text>
+                                <text x="76" y="92" font-size="26" font-weight="500" letter-spacing="9">SOLUTIONS</text>
+                            </g>
+                        </svg>
+                        <svg class="sidebar-brand-logo sidebar-brand-logo--mark" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Amiro Tech Solutions mark" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="translate(-11.38 25.2) scale(1.18)">
+                                <path d="M48 92L96 8L146 92H120L96 50L73 90L112 90L124 112H36L48 92Z" fill="#F4B400"/>
+                                <path d="M98 8L146 92H120L85 31L98 8Z" fill="#2A2C31"/>
+                                <path d="M92 64L108 92H135L119 64H92Z" fill="#2A2C31"/>
+                                <path d="M88 44L112 86H64L88 44ZM88 66L80 80H96L88 66Z" fill="#F8F8F8"/>
+                            </g>
+                        </svg>
+                        <span class="sidebar-brand-tagline">Inventory Management</span>
+                    </div>
+                    <button id="sidebar-toggle" class="sidebar-collapse-toggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                <nav class="sidebar-nav">
+                    <span class="sidebar-section-label">Overview</span>
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <span class="sidebar-section-label">Inventory</span>
+                    <a href="#" class="nav-item" data-page="items">
+                        <i class="fas fa-boxes"></i>
+                        <span>Products</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="stock">
+                        <i class="fas fa-cubes"></i>
+                        <span>Stock Levels</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="categories">
+                        <i class="fas fa-tags"></i>
+                        <span>Categories</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="transfers">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transfers</span>
+                    </a>
+                    <span class="sidebar-section-label">Operations</span>
+                    <a href="#" class="nav-item" data-page="locations">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Locations</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="compliance">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Compliance</span>
+                    </a>
+                    <span class="sidebar-section-label">Administration</span>
+                    <a href="#" class="nav-item" data-page="personal">
+                        <i class="fas fa-id-badge"></i>
+                        <span>Personnel</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="logs">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Audit Logs</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="users">
+                        <i class="fas fa-users-cog"></i>
+                        <span>User Management</span>
+                    </a>
+                </nav>
+                <div class="sidebar-footer">
+                    <a href="#" id="logout-btn" class="nav-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header class="top-header">
+                    <div class="header-left">
+                        <button class="dashboard-top-menu" type="button" aria-label="Toggle sidebar" onclick="document.getElementById('sidebar-toggle').click()"><i class="fas fa-bars"></i></button>
+                        <h2 id="page-title">Dashboard</h2>
+                    </div>
+                    <div class="header-right">
+                        <div class="header-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="global-search" aria-label="Open quick search" title="Quick search (Ctrl+K)" placeholder="Search across modules..." autocomplete="off" readonly aria-haspopup="dialog">
+                            <kbd class="quick-search-shortcut">Ctrl K</kbd>
+                        </div>
+                        <div class="header-notification">
+                            <button class="btn-icon" title="Notifications" id="notifications-btn" onclick="toggleNotificationsPanel()">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                            <span class="notification-dot" id="notification-dot" style="display:none"></span>
+                            <span class="notification-badge" id="notification-badge" style="display:none"></span>
+                            <!-- Notifications Dropdown Panel -->
+                            <div id="notifications-panel" class="notifications-panel hidden">
+                                <div class="notif-panel-header">
+                                    <span class="notif-panel-title"><i class="fas fa-bell"></i> Notifications</span>
+                                    <div class="notif-panel-actions">
+                                        <button class="btn-notif-action btn-notif-read" id="mark-all-read-btn" onclick="markAllNotificationsRead()" title="Mark all as read"><i class="fas fa-check-double"></i> Mark all read</button>
+                                        <button class="btn-notif-action btn-notif-clear" id="clear-all-notif-btn" onclick="clearAllNotifications()" title="Delete all notifications"><i class="fas fa-trash-alt"></i> Clear all</button>
+                                    </div>
+                                </div>
+                                <div id="notifications-list" class="notif-list">
+                                    <div class="notif-loading">Loading…</div>
+                                </div>
+                                <div class="notif-panel-footer">
+                                    <span class="notif-footer-count" id="notif-footer-count"></span>
+                                    <button class="btn-notif-close" onclick="closeNotificationsPanel()"><i class="fas fa-times"></i> Close</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-icon" id="dark-mode-toggle" title="Toggle dark mode" onclick="toggleDarkMode()">
+                            <i class="fas fa-moon" id="dark-mode-icon"></i>
+                        </button>
+                        <div class="user-info">
+                            <span id="demo-mode-pill" class="demo-mode-pill" hidden>Demo</span>
+                            <div class="user-avatar" id="user-avatar">A</div>
+                            <span id="user-name">Admin</span>
+                            <span id="user-role" class="badge">Admin</span>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-area">
+                    <!-- Dashboard -->
+                    <section id="dashboard-section" class="content-section">
+                        <!-- Welcome Banner -->
+                        <div class="dashboard-welcome">
+                            <div class="welcome-text">
+                                <h2 id="welcome-greeting">Welcome back</h2>
+                                <p class="welcome-subtitle">Here’s your business overview for today.</p>
+                                <p id="welcome-date"></p>
+                            </div>
+                            <div class="welcome-actions">
+                                <span class="system-active-pill"><i class="fas fa-circle"></i> System Active</span>
+                                <button class="btn btn-outline btn-sm" onclick="loadDashboard()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="welcome-illustration" aria-hidden="true">
+                                <svg viewBox="0 0 250 150" role="presentation">
+                                    <path d="M0 125 C48 78 78 150 128 96 S197 68 250 22 V150 H0Z" fill="rgba(63,126,231,.2)"/>
+                                    <rect x="66" y="29" width="138" height="96" rx="13" fill="#f8fbff" stroke="#dce8ff" stroke-width="5" transform="rotate(-5 135 77)"/>
+                                    <path d="M91 103V87h13v16m9 0V71h13v32m9 0V58h13v45m9 0V77h13v26" fill="#6b9cf6" transform="rotate(-5 135 77)"/>
+                                    <path d="m93 72 24-14 17 7 28-20" fill="none" stroke="#f4b000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <circle cx="188" cy="112" r="22" fill="#19b985" stroke="#b8f0df" stroke-width="5"/>
+                                    <path d="m178 112 7 7 14-16" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- KPI Stat Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card clickable stat-purple" onclick="showAssetsDetails()" title="Click to view serialized products">
+                                <div class="stat-icon bg-purple">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <p>Total Equipment</p>
+                                    <h3 id="total-assets">0</h3>
+                                    <span class="stat-subtitle">Serialized products</span>
+                                </div>
+                                <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
+                            </div>
+                            <div class="stat-card clickable stat-green" onclick="showLocationsDetails()" title="Click to view all locations">
+                                <div class="stat-icon bg-green">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <p>Active Locations</p>
+                                    <h3 id="total-locations">0</h3>
+                                    <span class="stat-subtitle">Active sites</span>
+                                </div>
+                                <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
+                            </div>
+                            <div class="stat-card clickable stat-orange" onclick="showLowStockDetails()" title="Click to view low stock items">
+                                <div class="stat-icon bg-orange">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <p>Low Stock Items</p>
+                                    <h3 id="low-stock-count">0</h3>
+                                    <span class="stat-subtitle" id="low-stock-subtitle">Items below reorder</span>
+                                </div>
+                                <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
+                            </div>
+                            <div class="stat-card clickable stat-red" onclick="showCalibrationDetails()" title="Click to view calibration alerts">
+                                <div class="stat-icon bg-red">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <p>Calibration Due</p>
+                                    <h3 id="calibration-count">0</h3>
+                                    <span class="stat-subtitle" id="calibration-subtitle">Due / Expired</span>
+                                </div>
+                                <div class="stat-arrow"><i class="fas fa-chevron-right"></i></div>
+                            </div>
+
+                        </div>
+
+                        <div class="reference-dashboard-row reference-dashboard-top">
+                            <div class="card dash-card reference-alert-card">
+                                <div class="card-header">
+                                    <h3><i class="fas fa-bell text-warning"></i> Alerts &amp; Notifications</h3>
+                                    <button class="btn btn-sm btn-link" onclick="showLowStockDetails()">View All →</button>
+                                </div>
+                                <div class="card-body reference-alert-body">
+                                    <div class="reference-alert-block">
+                                        <div id="low-stock-alerts"><p class="text-muted">Loading...</p></div>
+                                    </div>
+                                    <div class="reference-alert-block calibration-alert-block">
+                                        <div id="calibration-alerts"><p class="text-muted">Loading...</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card dash-card reference-chart-card">
+                                <div class="card-header"><h3><i class="fas fa-chart-pie text-primary"></i> Stock by Category</h3></div>
+                                <div class="card-body reference-chart-body">
+                                    <canvas id="stock-category-chart"></canvas>
+                                    <div id="stock-category-chart-empty" class="text-muted" style="display:none;">No category data available</div>
+                                </div>
+                            </div>
+                            <div class="card dash-card reference-chart-card reference-movement-card">
+                                <div class="card-header"><h3><i class="fas fa-chart-bar text-primary"></i> Stock Movement</h3><span class="chart-period-pill">7D</span></div>
+                                <div class="card-body reference-chart-body">
+                                    <canvas id="stock-movement-chart"></canvas>
+                                    <div id="stock-movement-chart-empty" class="text-muted" style="display:none;">No movement data available</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reference-dashboard-row reference-dashboard-bottom">
+                        <div class="card dash-card reference-activity-card">
+                            <div class="card-header"><h3><i class="fas fa-clock text-primary"></i> Recent Activity</h3><button class="btn btn-sm btn-link" onclick="navigateTo('logs')">View All →</button></div>
+                            <div class="card-body card-body-scroll"><div id="recent-activity-feed"><p class="text-muted">Loading...</p></div></div>
+                        </div>
+                        <div class="card location-stock-section dash-card reference-location-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-warehouse"></i> Location-wise Stock Summary</h3>
+                                <div class="header-actions">
+                                    <select id="dashboard-location-filter" class="form-select" onchange="loadLocationStockSummary()">
+                                        <option value="">All Locations</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Aggregate Summary Cards -->
+                                <div class="location-summary-stats" id="location-summary-stats">
+                                    <div class="summary-stat-card">
+                                        <div class="stat-value" id="summary-total-qty">0</div>
+                                        <div class="stat-label">Total Stock</div>
+                                    </div>
+                                    <div class="summary-stat-card received">
+                                        <div class="stat-value" id="summary-received-today">0</div>
+                                        <div class="stat-label">Received Today</div>
+                                    </div>
+                                    <div class="summary-stat-card issued">
+                                        <div class="stat-value" id="summary-issued-today">0</div>
+                                        <div class="stat-label">Issued Today</div>
+                                    </div>
+                                    <div class="summary-stat-card low-stock">
+                                        <div class="stat-value" id="summary-low-stock">0</div>
+                                        <div class="stat-label">Low Stock Items</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="reference-location-table-wrap">
+                                  <table class="reference-location-table">
+                                    <thead><tr><th>Location</th><th>Total Stock</th><th>Received</th><th>Issued</th><th>Available</th><th>Adjusted</th></tr></thead>
+                                    <tbody id="dashboard-location-table-body"><tr><td colspan="6" class="text-muted">Loading location data...</td></tr></tbody>
+                                  </table>
+                                </div>
+                                <div class="locations-grid" id="dashboard-locations-grid" style="display:none"></div>
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+
+                    <!-- Products Section -->
+                    <section id="items-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="products-heading-copy">
+                                <h3>Products</h3>
+                                <p>Manage equipment, instruments, and calibration records.</p>
+                            </div>
+                            <div class="section-header-actions">
+                                <span id="products-count" class="record-count"></span>
+                                <button class="btn btn-outline" onclick="showCalibrationSupplierTransactionModal()">
+                                    <i class="fas fa-truck"></i> Supplier Calibration
+                                </button>
+                                <button class="btn btn-primary" onclick="showAddItemModal()">
+                                    <i class="fas fa-plus"></i> Add Product
+                                </button>
+                            </div>
+                        </div>
+                        <div class="asset-subtabs" style="margin-bottom:12px;">
+                            <button class="asset-subtab active" id="products-tab-equipment" onclick="switchProductTypeTab('equipment')">
+                                Equipment
+                            </button>
+                            <button class="asset-subtab" id="products-tab-instrument" onclick="switchProductTypeTab('instrument')">
+                                Instruments
+                            </button>
+                        </div>
+                        <!-- Search & Filter Toolbar -->
+                        <div class="products-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="products-search" placeholder="Search by equipment name, instrument name, ID, serial no..." oninput="filterProducts()">
+                            </div>
+                            <select id="products-category-filter" onchange="filterProducts()">
+                                <option value="">All Types</option>
+                            </select>
+                            <select id="products-type-filter" onchange="filterProducts()" style="display:none;">
+                                <option value="">All Types</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="instrument">Instrument</option>
+                                <option value="calibration">Requires Calibration</option>
+                            </select>
+                        </div>
+                        <div class="card products-table-card">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table" id="products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID No</th>
+                                                <th>Item</th>
+                                                <th>Make</th>
+                                                <th>Category</th>
+                                                <th>Serial No</th>
+                                                <th>Unit</th>
+                                                <th>Type</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="items-table-body">
+                                            <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="pagination-controls" id="products-pagination" style="display: none;">
+                                    <div class="pagination-wrapper">
+                                        <button class="btn btn-sm btn-outline" onclick="goToProductsPage(1)" id="products-first-page">
+                                            <i class="fas fa-step-backward"></i> First
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="previousProductsPage()" id="products-prev-page">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+
+                                        <div class="pagination-page-input-group">
+                                            <span>Page</span>
+                                            <input type="number" id="products-page-input" class="pagination-page-input" min="1" value="1" onchange="goToProductsPage(this.value)">
+                                            <span>of <span id="products-total-pages">1</span></span>
+                                        </div>
+
+                                        <button class="btn btn-sm btn-outline" onclick="nextProductsPage()" id="products-next-page">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="goToProductsPage(document.getElementById('products-total-pages').textContent)" id="products-last-page">
+                                            Last <i class="fas fa-step-forward"></i>
+                                        </button>
+
+                                        <div class="pagination-info" id="products-page-info">Showing 0 of 0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Stock Section -->
+                    <section id="stock-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="stock-heading-copy">
+                                <h3>Stock Levels</h3>
+                                <p>Track stock balances and movement across your locations.</p>
+                            </div>
+                            <div class="header-actions">
+                                <select id="stock-location-filter" class="form-select" onchange="loadStockByLocation()">
+                                    <option value="">All Locations</option>
+                                </select>
+                                <button class="btn btn-info" onclick="sendLowStockAlert()" title="Send email alert for low stock items">
+                                    <i class="fas fa-envelope"></i> Send Alert
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="exportPurchaseRegisterXLSX()" title="Export purchase register in PUR-F-07 Excel format">
+                                    <i class="fas fa-file-invoice"></i> Purchase Register
+                                </button>
+                                <button class="btn btn-success" onclick="showReceiptStockModal()" title="Receive purchased stock and record it in the purchase register">
+                                    <i class="fas fa-arrow-down"></i> Receive Stock
+                                </button>
+                                <button class="btn btn-warning" onclick="showIssueStockModal()" title="Issue consumable or accessory stock">
+                                    <i class="fas fa-arrow-up"></i> Issue Stock
+                                </button>
+                                <button class="btn btn-primary" onclick="showAddStockItemModal()">
+                                    <i class="fas fa-plus"></i> Add Stock Item
+                                </button>
+                                <button class="btn btn-primary" onclick="showAdjustStockModal()">
+                                    <i class="fas fa-edit"></i> Adjust Stock
+                                </button>
+                            </div>
+                        </div>
+                        <div class="asset-subtabs" style="margin-bottom:12px;">
+                            <button class="asset-subtab active" id="stock-tab-consumable" onclick="switchStockTypeTab('consumable')">
+                                Consumables
+                            </button>
+                            <button class="asset-subtab" id="stock-tab-accessory" onclick="switchStockTypeTab('accessory')">
+                                Accessories
+                            </button>
+                        </div>
+                        <!-- Stock Search & Filter Toolbar -->
+                        <div class="filter-toolbar stock-filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="stock-search" placeholder="Search by product name, code, make, model or category..." oninput="filterStock()">
+                            </div>
+                            <select id="stock-category-filter" onchange="filterStock()">
+                                <option value="">All Categories</option>
+                            </select>
+                            <select id="stock-status-filter" onchange="filterStock()">
+                                <option value="">All Status</option>
+                                <option value="low">Low Stock</option>
+                                <option value="ok">OK</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Location Summary Card -->
+                        <div id="location-summary-card" class="card location-summary hidden">
+                            <div class="card-body">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="label">Location</span>
+                                        <span class="value" id="stock-summary-location-name">-</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="label">Total Items</span>
+                                        <span class="value" id="stock-summary-total-items">0</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="label">Total Quantity</span>
+                                        <span class="value" id="stock-summary-total-qty">0</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="label">Low Stock Items</span>
+                                        <span class="value text-warning" id="stock-summary-low-stock">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card stock-table-card">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table" id="stock-table">
+                                        <colgroup>
+                                            <col style="width: 8%;">
+                                            <col style="width: 17%;">
+                                            <col style="width: 14%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 7%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 7%;">
+                                            <col style="width: 6%;">
+                                            <col style="width: 7%;">
+                                            <col style="width: 14%;">
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Item</th>
+                                                <th>Location</th>
+                                                <th>Opening</th>
+                                                <th>Received</th>
+                                                <th>Issued</th>
+                                                <th>Adjusted</th>
+                                                <th>Closing</th>
+                                                <th>Reserved</th>
+                                                <th>Available</th>
+                                                <th>Alert Qty</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="stock-table-body">
+                                            <tr><td colspan="13" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Pagination Controls -->
+                                <div class="pagination-controls" id="stock-pagination" style="display: none;">
+                                    <div class="pagination-wrapper">
+                                        <button class="btn btn-sm btn-outline" onclick="goToStockPage(1)" id="stock-first-page">
+                                            <i class="fas fa-step-backward"></i> First
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="previousStockPage()" id="stock-prev-page">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+                                        
+                                        <div class="pagination-page-input-group">
+                                            <span>Page</span>
+                                            <input type="number" id="stock-page-input" class="pagination-page-input" min="1" value="1" onchange="goToStockPage(this.value)">
+                                            <span>of <span id="stock-total-pages">1</span></span>
+                                        </div>
+                                        
+                                        <button class="btn btn-sm btn-outline" onclick="nextStockPage()" id="stock-next-page">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="goToStockPage(document.getElementById('stock-total-pages').textContent)" id="stock-last-page">
+                                            Last <i class="fas fa-step-forward"></i>
+                                        </button>
+                                        
+                                        <div class="pagination-info" id="stock-page-info">Showing 1 - 10 of 0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Locations Section -->
+                    <section id="locations-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>Locations</h3><p>Manage operating sites and location details.</p></div>
+                            <button class="btn btn-primary" onclick="showAddLocationModal()">
+                                <i class="fas fa-plus"></i> Add Location
+                            </button>
+                        </div>
+                        <div class="filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="locations-search" placeholder="Search by name, code, city..." oninput="filterLocations()">
+                            </div>
+                        </div>
+                        <div class="locations-grid" id="locations-grid">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </section>
+
+                    <!-- Categories Section -->
+                    <section id="categories-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>Categories</h3><p>Organize products by type and stock handling.</p></div>
+                            <button class="btn btn-primary" onclick="showAddCategoryModal()">
+                                <i class="fas fa-plus"></i> Add Category
+                            </button>
+                        </div>
+                        <div class="filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="categories-search" placeholder="Search by name..." oninput="filterCategories()">
+                            </div>
+                            <select id="categories-status-filter" onchange="filterCategories()">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                            <select id="categories-stock-filter" onchange="filterCategories()">
+                                <option value="">All Stock Handling</option>
+                                <option value="serialized">Serialized</option>
+                                <option value="quantity">Quantity Based</option>
+                            </select>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Stock Handling</th>
+                                                <th>Description</th>
+                                                <th>Items Count</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="categories-table-body">
+                                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Transfers Section -->
+                    <section id="transfers-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>Transfers</h3><p>Track stock requests and movement between locations.</p></div>
+                            <div class="header-actions">
+                                <button class="btn btn-outline" onclick="refreshTransfersSection()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                                <button class="btn btn-outline" id="transfer-export-btn" onclick="exportTransferStockRegisterXLSX()" title="Export complete STR-F-01 stock register">
+                                    <i class="fas fa-file-excel"></i> Stock Register
+                                </button>
+                                <button class="btn btn-primary" id="transfer-new-btn" onclick="showCreateTransferModal()">
+                                    <i class="fas fa-plus"></i> New Transfer Request
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Summary Cards -->
+                        <div class="transfer-stats-row" id="transfer-stats-row">
+                            <div class="transfer-stat-card" data-status="all">
+                                <div class="tsc-icon bg-blue"><i class="fas fa-exchange-alt"></i></div>
+                                <div class="tsc-info"><span class="tsc-value" id="tstat-total">0</span><span class="tsc-label">Total</span></div>
+                            </div>
+                            <div class="transfer-stat-card" data-status="requested">
+                                <div class="tsc-icon bg-amber"><i class="fas fa-clock"></i></div>
+                                <div class="tsc-info"><span class="tsc-value" id="tstat-pending">0</span><span class="tsc-label">Pending</span></div>
+                            </div>
+                            <div class="transfer-stat-card" data-status="in_transit">
+                                <div class="tsc-icon bg-cyan"><i class="fas fa-shipping-fast"></i></div>
+                                <div class="tsc-info"><span class="tsc-value" id="tstat-transit">0</span><span class="tsc-label">In Transit</span></div>
+                            </div>
+                            <div class="transfer-stat-card" data-status="received">
+                                <div class="tsc-icon bg-green"><i class="fas fa-check-circle"></i></div>
+                                <div class="tsc-info"><span class="tsc-value" id="tstat-completed">0</span><span class="tsc-label">Completed</span></div>
+                            </div>
+                            <div class="transfer-stat-card" data-status="rejected">
+                                <div class="tsc-icon bg-red"><i class="fas fa-times-circle"></i></div>
+                                <div class="tsc-info"><span class="tsc-value" id="tstat-rejected">0</span><span class="tsc-label">Rejected</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Top-level View Tabs: My Requests / For My Action -->
+                        <div class="transfer-view-tabs">
+                            <button id="transfer-view-btn-requests" class="transfer-view-btn active" onclick="setTransferView('requests')">
+                                <i class="fas fa-paper-plane"></i> My Requests
+                                <span class="transfer-view-badge" id="view-badge-requests">0</span>
+                            </button>
+                            <button id="transfer-view-btn-action" class="transfer-view-btn" onclick="setTransferView('action')">
+                                <i class="fas fa-inbox"></i> For My Action
+                                <span class="transfer-view-badge action-badge" id="view-badge-action">0</span>
+                            </button>
+                        </div>
+
+                        <!-- MY REQUESTS view -->
+                        <div id="transfer-view-requests" class="transfer-view-panel">
+                            <div class="filter-toolbar">
+                                <div class="toolbar-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="transfers-search" placeholder="Search transfers, locations, items..." oninput="filterTransfers()">
+                                </div>
+                                <select id="transfers-status-filter" onchange="filterTransfers()">
+                                    <option value="">All Status</option>
+                                    <option value="requested">Requested</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="in_transit">In Transit</option>
+                                    <option value="received">Received</option>
+                                    <option value="partially_received">Partially Received</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                <select id="transfers-priority-filter" onchange="filterTransfers()">
+                                    <option value="">All Priority</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="high">High</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body" style="padding-top:0">
+                                    <div class="transfer-module-tabs">
+                                        <button id="transfer-module-consumables" class="transfer-tab-btn active" onclick="setTransferModuleTab('consumables')">
+                                            <i class="fas fa-boxes"></i> Quantity Based
+                                            <span class="tab-count" id="consumable-tab-count">0</span>
+                                        </button>
+                                        <button id="transfer-module-equipment" class="transfer-tab-btn" onclick="setTransferModuleTab('equipment')">
+                                            <i class="fas fa-tools"></i> Serialized
+                                            <span class="tab-count" id="equipment-tab-count">0</span>
+                                        </button>
+                                    </div>
+
+                                    <div id="transfer-consumables-panel" class="transfer-panel">
+                                        <div class="table-container">
+                                            <table class="data-table transfers-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Transfer #</th>
+                                                        <th>Item</th>
+                                                        <th>Make</th>
+                                                        <th>Batch No</th>
+                                                        <th>Qty</th>
+                                                        <th>From</th>
+                                                        <th>To</th>
+                                                        <th>Assigned To</th>
+                                                        <th>Date</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="transfers-table-body">
+                                                    <tr><td colspan="11" class="text-center">Loading...</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div id="transfer-equipment-panel" class="hidden transfer-panel">
+                                        <div class="table-container">
+                                            <table class="data-table transfers-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Transfer #</th>
+                                                        <th>Date</th>
+                                                        <th>Equipment</th>
+                                                        <th>S.No</th>
+                                                        <th>Accessories</th>
+                                                        <th>Strength</th>
+                                                        <th>Qty</th>
+                                                        <th>From</th>
+                                                        <th>To</th>
+                                                        <th>Assigned To</th>
+                                                        <th>Return Date</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="equipment-transfers-table-body">
+                                                    <tr><td colspan="13" class="text-center">Loading...</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FOR MY ACTION view -->
+                        <div id="transfer-view-action" class="transfer-view-panel hidden">
+                            <div class="filter-toolbar">
+                                <div class="toolbar-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="action-transfers-search" placeholder="Search by transfer #, item, location..." oninput="filterActionTransfers()">
+                                </div>
+                                <select id="action-transfers-status-filter" onchange="filterActionTransfers()">
+                                    <option value="">All Status</option>
+                                    <option value="requested">Awaiting Approval</option>
+                                    <option value="approved">Ready to Dispatch</option>
+                                    <option value="in_transit">In Transit</option>
+                                </select>
+                            </div>
+
+                            <div id="action-transfers-container">
+                                <div class="text-center" style="padding:40px;">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="text-muted mt-2">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Equipment Compliance Section -->
+                    <section id="compliance-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>Equipment Compliance</h3><p>Review equipment status, calibration, and service history.</p></div>
+                            <div class="header-actions">
+                                <button class="btn btn-secondary" onclick="exportComplianceCSV()">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                                <button class="btn btn-outline" onclick="loadComplianceData()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Compliance Summary Cards -->
+                        <div class="compliance-stats-row">
+                            <div class="compliance-stat-card" data-filter="all" onclick="complianceStatFilter(this)">
+                                <div class="csc-icon bg-blue"><i class="fas fa-clipboard-check"></i></div>
+                                <div class="csc-info">
+                                    <span class="csc-value" id="cstat-total">0</span>
+                                    <span class="csc-label">Total Equipment</span>
+                                </div>
+                            </div>
+                            <div class="compliance-stat-card" data-filter="blocked" onclick="complianceStatFilter(this)">
+                                <div class="csc-icon bg-red"><i class="fas fa-ban"></i></div>
+                                <div class="csc-info">
+                                    <span class="csc-value" id="cstat-blocked">0</span>
+                                    <span class="csc-label">Blocked</span>
+                                </div>
+                            </div>
+                            <div class="compliance-stat-card" data-filter="cal-issues" onclick="complianceStatFilter(this)">
+                                <div class="csc-icon bg-amber"><i class="fas fa-ruler-combined"></i></div>
+                                <div class="csc-info">
+                                    <span class="csc-value" id="cstat-cal">0</span>
+                                    <span class="csc-label">Calibration Issues</span>
+                                </div>
+                            </div>
+                            <div class="compliance-stat-card" data-filter="maint-issues" onclick="complianceStatFilter(this)">
+                                <div class="csc-icon bg-cyan"><i class="fas fa-wrench"></i></div>
+                                <div class="csc-info">
+                                    <span class="csc-value" id="cstat-maint">0</span>
+                                    <span class="csc-label">Under Maintenance</span>
+                                </div>
+                            </div>
+                            <div class="compliance-stat-card" data-filter="clear" onclick="complianceStatFilter(this)">
+                                <div class="csc-icon bg-green"><i class="fas fa-check-circle"></i></div>
+                                <div class="csc-info">
+                                    <span class="csc-value" id="cstat-clear">0</span>
+                                    <span class="csc-label">All Clear</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Toolbar -->
+                        <div class="filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="compliance-search" placeholder="Search serial, item, location..." oninput="filterComplianceData()">
+                            </div>
+                            <select id="compliance-status-filter" onchange="filterComplianceData()">
+                                <option value="">All Status</option>
+                                <option value="blocked">Blocked</option>
+                                <option value="allowed">Allowed</option>
+                            </select>
+                            <select id="compliance-location-filter" onchange="filterComplianceData()">
+                                <option value="">All Locations</option>
+                            </select>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="card">
+                            <div class="card-body" style="padding-top:0">
+                                <div class="compliance-tabs">
+                                    <button id="compliance-tab-all" class="compliance-tab-btn active" onclick="setComplianceTab('all')">
+                                        <i class="fas fa-list"></i> All Equipment
+                                        <span class="tab-count" id="compliance-all-count">0</span>
+                                    </button>
+                                    <button id="compliance-tab-calibration" class="compliance-tab-btn" onclick="setComplianceTab('calibration')">
+                                        <i class="fas fa-ruler-combined"></i> Calibration
+                                        <span class="tab-count tab-count-warn" id="compliance-cal-count">0</span>
+                                    </button>
+                                    <button id="compliance-tab-maintenance" class="compliance-tab-btn" onclick="setComplianceTab('maintenance')" style="display:none">
+                                        <i class="fas fa-wrench"></i> Service History
+                                        <span class="tab-count tab-count-warn" id="compliance-maint-count">0</span>
+                                    </button>
+                                </div>
+
+                                <!-- All Equipment Panel -->
+                                <div id="compliance-all-panel" class="compliance-panel">
+                                    <div class="table-container">
+                                        <table class="data-table compliance-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Serial Number</th>
+                                                    <th>Equipment</th>
+                                                    <th>Location</th>
+                                                    <th>Calibration</th>
+                                                    <th>Equipment Status</th>
+                                                    <th>Status</th>
+                                                    <th>Issues</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="compliance-all-body">
+                                                <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination-controls" id="compliance-all-pagination" style="display:none">
+                                        <div class="pagination-wrapper">
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('all',1)" id="compliance-all-first-page"><i class="fas fa-step-backward"></i> First</button>
+                                            <button class="btn btn-sm btn-outline" onclick="prevCompliancePage('all')" id="compliance-all-prev-page"><i class="fas fa-chevron-left"></i> Previous</button>
+                                            <div class="pagination-page-input-group">
+                                                <span>Page</span>
+                                                <input type="number" id="compliance-all-page-input" class="pagination-page-input" min="1" value="1" onchange="goToCompliancePage('all',this.value)">
+                                                <span>of <span id="compliance-all-total-pages">1</span></span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline" onclick="nextCompliancePage('all')" id="compliance-all-next-page">Next <i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('all',document.getElementById('compliance-all-total-pages').textContent)" id="compliance-all-last-page">Last <i class="fas fa-step-forward"></i></button>
+                                            <div class="pagination-info" id="compliance-all-page-info">Showing 0 - 0 of 0</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Calibration Issues Panel -->
+                                <div id="compliance-calibration-panel" class="compliance-panel hidden">
+                                    <div class="table-container">
+                                        <table class="data-table compliance-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Serial Number</th>
+                                                    <th>ID No.</th>
+                                                    <th>Equipment</th>
+                                                    <th>Location</th>
+                                                    <th>Calibration Due</th>
+                                                    <th>Days</th>
+                                                    <th>Last Result</th>
+                                                    <th>Severity</th>
+                                                    <th>Issues</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="compliance-calibration-body">
+                                                <tr><td colspan="9" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination-controls" id="compliance-calibration-pagination" style="display:none">
+                                        <div class="pagination-wrapper">
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('calibration',1)" id="compliance-calibration-first-page"><i class="fas fa-step-backward"></i> First</button>
+                                            <button class="btn btn-sm btn-outline" onclick="prevCompliancePage('calibration')" id="compliance-calibration-prev-page"><i class="fas fa-chevron-left"></i> Previous</button>
+                                            <div class="pagination-page-input-group">
+                                                <span>Page</span>
+                                                <input type="number" id="compliance-calibration-page-input" class="pagination-page-input" min="1" value="1" onchange="goToCompliancePage('calibration',this.value)">
+                                                <span>of <span id="compliance-calibration-total-pages">1</span></span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline" onclick="nextCompliancePage('calibration')" id="compliance-calibration-next-page">Next <i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('calibration',document.getElementById('compliance-calibration-total-pages').textContent)" id="compliance-calibration-last-page">Last <i class="fas fa-step-forward"></i></button>
+                                            <div class="pagination-info" id="compliance-calibration-page-info">Showing 0 - 0 of 0</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Service History Panel -->
+                                <div id="compliance-maintenance-panel" class="compliance-panel hidden">
+                                    <div class="table-container">
+                                        <table class="data-table compliance-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Serial Number</th>
+                                                    <th>Equipment</th>
+                                                    <th>Frequency</th>
+                                                    <th>Location</th>
+                                                    <th>Last Completed</th>
+                                                    <th>Days Since</th>
+                                                    <th>Next Due</th>
+                                                    <th>Period Status</th>
+                                                    <th>Issues</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="compliance-maintenance-body">
+                                                <tr><td colspan="9" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination-controls" id="compliance-maintenance-pagination" style="display:none">
+                                        <div class="pagination-wrapper">
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('maintenance',1)" id="compliance-maintenance-first-page"><i class="fas fa-step-backward"></i> First</button>
+                                            <button class="btn btn-sm btn-outline" onclick="prevCompliancePage('maintenance')" id="compliance-maintenance-prev-page"><i class="fas fa-chevron-left"></i> Previous</button>
+                                            <div class="pagination-page-input-group">
+                                                <span>Page</span>
+                                                <input type="number" id="compliance-maintenance-page-input" class="pagination-page-input" min="1" value="1" onchange="goToCompliancePage('maintenance',this.value)">
+                                                <span>of <span id="compliance-maintenance-total-pages">1</span></span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline" onclick="nextCompliancePage('maintenance')" id="compliance-maintenance-next-page">Next <i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn btn-sm btn-outline" onclick="goToCompliancePage('maintenance',document.getElementById('compliance-maintenance-total-pages').textContent)" id="compliance-maintenance-last-page">Last <i class="fas fa-step-forward"></i></button>
+                                            <div class="pagination-info" id="compliance-maintenance-page-info">Showing 0 - 0 of 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="compliance-reminder-note">
+                                        <i class="fas fa-info-circle"></i>
+                                        Service history is retained for reference only. Periodic maintenance reminders are disabled.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Log Management Section -->
+                    <section id="logs-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>Log Management</h3><p>Review system activity and changes across the inventory.</p></div>
+                            <div class="header-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('logs-data-table', 'audit-logs.csv')" title="Export current view to CSV">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                                <button class="btn btn-outline" onclick="loadLogs()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="logs-search" placeholder="Search by user, resource..." oninput="filterLogs()">
+                            </div>
+                            <select id="logs-action-filter" onchange="filterLogs()">
+                                <option value="">All Actions</option>
+                                <option value="create">Create</option>
+                                <option value="delete">Delete</option>
+                                <option value="receipt">Receipt</option>
+                                <option value="issue">Issue</option>
+                                <option value="return">Return</option>
+                                <option value="adjustment">Adjustment</option>
+                                <option value="approve">Approve</option>
+                                <option value="reject">Reject</option>
+                                <option value="ship">Ship</option>
+                                <option value="receive">Receive</option>
+                                <option value="cancel">Cancel</option>
+                            </select>
+                            <select id="logs-resource-filter" onchange="filterLogs()">
+                                <option value="">All Resources</option>
+                            </select>
+                            <label style="font-size:13px;color:#6b7280;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                                <i class="fas fa-calendar-alt"></i> From
+                                <input type="date" id="logs-date-from" onchange="filterLogs()" style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:13px;color:#374151;">
+                            </label>
+                            <label style="font-size:13px;color:#6b7280;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                                To
+                                <input type="date" id="logs-date-to" onchange="filterLogs()" style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:13px;color:#374151;">
+                            </label>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table" id="logs-data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>When</th>
+                                                <th>Action</th>
+                                                <th>Resource</th>
+                                                <th>User</th>
+                                                <th>Resource ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="logs-table-body">
+                                            <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Users Section -->
+                    <section id="users-section" class="content-section hidden">
+                        <div class="section-header">
+                            <div class="module-heading-copy"><h3>User Management</h3><p>Manage accounts, roles, and access to the system.</p></div>
+                            <button class="btn btn-primary" onclick="showAddUserModal()">
+                                <i class="fas fa-plus"></i> Add User
+                            </button>
+                        </div>
+                        <div class="filter-toolbar">
+                            <div class="toolbar-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="users-search" placeholder="Search by name, email..." oninput="filterUsers()">
+                            </div>
+                            <select id="users-role-filter" onchange="filterUsers()">
+                                <option value="">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="head_office_manager">General Manager</option>
+                                <option value="location_manager">Location Manager</option>
+                                <option value="demo_user">Demo User</option>
+                            </select>
+                            <select id="users-status-filter" onchange="filterUsers()">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Assigned Locations</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="users-table-body">
+                                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Personal Management Section -->
+                    <section id="personal-section" class="content-section hidden">
+                        <div class="section-header">
+                            <h3>Personnel Management</h3>
+                            <div class="header-actions">
+                                <button class="btn btn-secondary" onclick="showManageEmployeesModal()">
+                                    <i class="fas fa-users"></i> Manage Field Staff
+                                </button>
+                                <button class="btn btn-secondary" onclick="exportEmployeeRecordsCSV()">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                                <button class="btn btn-primary" onclick="showAddEmployeeRecordModal()">
+                                    <i class="fas fa-plus"></i> Add Record
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="filter-toolbar">
+                                    <div class="toolbar-search">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="personal-search" placeholder="Search by employee, title, certificate..." oninput="filterEmployeeRecords()">
+                                    </div>
+                                    <select id="personal-status-filter" onchange="filterEmployeeRecords()">
+                                        <option value="">All Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Location</th>
+                                                <th>Method</th>
+                                                <th>Title</th>
+                                                <th>Certificate #</th>
+                                                <th>Issuer</th>
+                                                <th>Issue Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employee-records-table-body">
+                                            <tr><td colspan="10" class="text-center">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Pagination Controls -->
+                                <div class="pagination-controls" id="personnel-pagination" style="display: none;">
+                                    <div class="pagination-wrapper">
+                                        <button class="btn btn-sm btn-outline" onclick="goToPersonnelPage(1)" id="personnel-first-page">
+                                            <i class="fas fa-step-backward"></i> First
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="previousPersonnelPage()" id="personnel-prev-page">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+                                        <div class="pagination-page-input-group">
+                                            <span>Page</span>
+                                            <input type="number" id="personnel-page-input" class="pagination-page-input" min="1" value="1" onchange="goToPersonnelPage(this.value)">
+                                            <span>of <span id="personnel-total-pages">1</span></span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline" onclick="nextPersonnelPage()" id="personnel-next-page">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline" onclick="goToPersonnelPage(document.getElementById('personnel-total-pages').textContent)" id="personnel-last-page">
+                                            Last <i class="fas fa-step-forward"></i>
+                                        </button>
+                                        <div class="pagination-info" id="personnel-page-info">Showing 1 - 10 of 0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Jobs (Hold) Section -->
+                    <section id="jobs-section" class="content-section hidden">
+                        <div class="section-header">
+                            <h3>Jobs</h3>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;text-align:center;">
+                            <i class="fas fa-hard-hat" style="font-size:72px;color:#cbd5e0;margin-bottom:24px;"></i>
+                            <h2 style="color:#4a5568;margin-bottom:12px;">Coming Soon</h2>
+                            <p style="color:#718096;max-width:400px;line-height:1.6;">The Jobs module is currently under development and will be available in a future release.</p>
+                        </div>
+                    </section>
+                </div>
+                <div class="amiro-ai-root">
+                    <button id="amiro-ai-launch" class="amiro-ai-launch" type="button" aria-label="Open Amiro Intelligence" aria-expanded="false" title="Amiro Intelligence">
+                        <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    </button>
+                    <section id="amiro-ai-panel" class="amiro-ai-panel hidden" role="dialog" aria-modal="false" aria-labelledby="amiro-ai-title">
+                        <header class="amiro-ai-header">
+                            <div class="amiro-ai-brand-icon"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></div>
+                            <div class="amiro-ai-brand-copy"><strong id="amiro-ai-title">Amiro Intelligence</strong><span>Your Amiro IMS assistant</span></div>
+                            <span class="amiro-ai-language">ENGLISH</span>
+                            <button type="button" class="amiro-ai-header-btn" onclick="resetAmiroAssistant()" title="New conversation" aria-label="New conversation"><i class="fas fa-rotate-left"></i></button>
+                            <button type="button" class="amiro-ai-header-btn" onclick="minimizeAmiroAssistant()" title="Minimize" aria-label="Minimize assistant"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="amiro-ai-header-btn" onclick="closeAmiroAssistant()" title="Close" aria-label="Close assistant"><i class="fas fa-times"></i></button>
+                        </header>
+                        <div id="amiro-ai-welcome" class="amiro-ai-welcome">
+                            <div class="amiro-ai-welcome-icon"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></div>
+                            <h2>Hello! Welcome.</h2>
+                            <p>I’m your Amiro IMS assistant. How can I help you today?</p>
+                            <small>Ask in English about products, stock, locations, transfers, or compliance.</small>
+                            <div class="amiro-ai-suggestions-heading">SUGGESTED QUESTIONS</div>
+                            <div class="amiro-ai-suggestions">
+                                <button type="button" data-amiro-question="What does this dashboard show?">📊 <span>What does this dashboard show?</span></button>
+                                <button type="button" data-amiro-question="Are any items low in stock?">⚠️ <span>Are any items low in stock?</span></button>
+                                <button type="button" data-amiro-question="Which calibrations are due?">🧰 <span>Which calibrations are due?</span></button>
+                                <button type="button" data-amiro-question="How do I add a product?">📦 <span>How do I add a product?</span></button>
+                                <button type="button" data-amiro-question="Show recent stock activity">📈 <span>Show recent stock activity</span></button>
+                                <button type="button" data-amiro-question="How do I request a transfer?">🚚 <span>How do I request a transfer?</span></button>
+                            </div>
+                        </div>
+                        <div id="amiro-ai-messages" class="amiro-ai-messages hidden" role="log" aria-live="polite" aria-relevant="additions"></div>
+                        <form id="amiro-ai-form" class="amiro-ai-composer">
+                            <textarea id="amiro-ai-input" rows="1" maxlength="600" placeholder="Ask Amiro Intelligence about your IMS…" aria-label="Ask Amiro Intelligence"></textarea>
+                            <button id="amiro-ai-send" type="submit" aria-label="Send question" title="Send"><i class="fas fa-paper-plane"></i></button>
+                            <div class="amiro-ai-composer-hint"><span><kbd>Enter</kbd> to send · <kbd>Shift + Enter</kbd> for a new line</span><span>Amiro IMS · English only</span></div>
+                        </form>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Quick Search Command Palette -->
+    <div id="quick-search-overlay" class="quick-search-overlay hidden">
+        <div class="quick-search-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-search-title">
+            <div class="quick-search-top">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span id="quick-search-title" class="hidden">Quick Search</span>
+                <input id="quick-search-command-input" type="search" placeholder="Type a command, module, or route..." autocomplete="off" spellcheck="false">
+                <kbd>ESC</kbd>
+            </div>
+            <div id="quick-search-results" class="quick-search-results" role="listbox" aria-label="Quick search actions"></div>
+            <div class="quick-search-footer">
+                <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                <span><kbd>↵</kbd> to select</span>
+                <span><kbd>ESC</kbd> to dismiss</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locked module enquiry form -->
+    <div id="contract-request-overlay" class="contract-request-overlay hidden">
+        <section class="contract-request-dialog" role="dialog" aria-modal="true" aria-labelledby="contract-request-title">
+            <button class="contract-request-close" type="button" onclick="closeContractRequestModal()" aria-label="Close request form">&times;</button>
+            <div class="contract-request-heading-icon"><i class="fas fa-lock"></i></div>
+            <p class="contract-request-eyebrow">AMIRO TECH SOLUTIONS</p>
+            <h2 id="contract-request-title">Unlock more for your team</h2>
+            <p class="contract-request-intro">Choose an appointment time. The Amiro team will follow up.</p>
+            <form id="contract-request-form">
+                <input type="hidden" name="requested_module" id="contract-request-module">
+                <div class="contract-request-fields">
+                    <div class="contract-request-calendar">
+                        <div class="contract-calendar-header">
+                            <div class="contract-calendar-title-wrap">
+                                <span class="contract-calendar-icon"><i class="fas fa-calendar-alt"></i></span>
+                                <div>
+                                    <strong class="contract-calendar-title">Select Appointment</strong>
+                                    <p class="contract-calendar-subtitle">Live availability · Product walkthrough</p>
+                                </div>
+                            </div>
+                            <div class="contract-calendar-badges">
+                                <span class="calendar-pill"><i class="far fa-clock"></i> 90 mins</span>
+                                <span class="calendar-pill"><i class="fas fa-video"></i> Google Meet</span>
+                            </div>
+                        </div>
+
+                        <!-- Date Selection Strip -->
+                        <div class="contract-date-picker-wrap">
+                            <div class="contract-section-header">
+                                <span class="contract-section-title"><i class="far fa-calendar-check"></i> 1. Choose Date</span>
+                                <div class="contract-custom-date-wrap">
+                                    <button type="button" class="contract-custom-date-btn" id="contract-custom-date-btn" title="Open calendar to choose any date">
+                                        <i class="far fa-calendar-alt"></i>
+                                        <span id="contract-custom-date-label">Full Calendar</span>
+                                        <i class="fas fa-chevron-down cal-dropdown-chevron"></i>
+                                    </button>
+                                    <input id="contract-demo-date" name="demo_date" type="hidden">
+
+                                    <!-- Interactive Monthly Calendar Dropdown -->
+                                    <div id="contract-calendar-popover" class="contract-calendar-popover hidden" role="dialog" aria-label="Interactive demo calendar">
+                                        <div class="cal-popover-header">
+                                            <button type="button" class="cal-nav-btn" id="cal-prev-month" aria-label="Previous month">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <span class="cal-month-title" id="cal-month-title">November 2026</span>
+                                            <button type="button" class="cal-nav-btn" id="cal-next-month" aria-label="Next month">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                        <div class="cal-weekdays-row">
+                                            <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+                                        </div>
+                                        <div class="cal-days-grid" id="cal-days-grid">
+                                            <!-- Dynamically generated by app.js -->
+                                        </div>
+                                        <div class="cal-popover-footer">
+                                            <span class="cal-footer-hint"><i class="fas fa-info-circle"></i> Open Mon–Sat (Closed on Sundays) &middot; Up to 90 days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="contract-quick-dates" class="contract-quick-dates" role="radiogroup" aria-label="Quick date selection">
+                                <!-- Populated dynamically by app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Time Slot Selection Grid -->
+                        <div class="contract-time-picker-wrap">
+                            <div class="contract-section-header">
+                                <span class="contract-section-title"><i class="far fa-clock"></i> 2. Available Timings</span>
+                                <span id="contract-slots-count" class="contract-slots-meta">Select a date</span>
+                            </div>
+                            <input type="hidden" name="start_at" id="contract-demo-time">
+                            <div id="contract-time-slots-grid" class="contract-time-slots-grid" role="radiogroup" aria-label="Available appointment times">
+                                <div class="contract-slots-placeholder">Select a date to view available times</div>
+                            </div>
+                        </div>
+
+                        <p id="contract-demo-calendar-status" class="contract-demo-calendar-status" aria-live="polite">Select a date to see available appointment times.</p>
+                    </div>
+                    <label class="contract-request-message">What are your requirements?<textarea name="message" rows="3" maxlength="1200" placeholder="Tell us what you need, which modules interest you, or any questions for our team"></textarea></label>
+                    <label class="contract-request-honeypot" aria-hidden="true">Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label>
+                </div>
+                <p class="contract-request-pending"><i class="fas fa-info-circle"></i> Google Calendar sends the invitation to you. Your details and Meet link are emailed to Amiro only.</p>
+                <p id="contract-demo-booking-status" class="contract-demo-booking-status" aria-live="polite"></p>
+                <button id="contract-request-submit" class="contract-request-submit" type="submit" disabled>Request access and book appointment</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div id="modal-container" class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button class="btn-icon" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="js/config.js?v=20261111-users-locations-v17"></script>
+    <script src="js/api.js?v=20261111-users-locations-v17"></script>
+    <script src="js/app.js?v=20261111-users-locations-v17"></script>
+</body>
+</html>

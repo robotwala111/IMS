@@ -41,8 +41,11 @@ logger = get_logger(__name__)
 APP_VERSION = "2.0.0"
 APP_START_TIME: datetime | None = None
 
-# Path to optional bundled static frontend
-FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+# Path to optional bundled static frontend (supports both backend/frontend in Vercel and ../frontend in dev)
+_candidate_frontend = Path(__file__).resolve().parents[1] / "frontend"
+if not _candidate_frontend.is_dir():
+    _candidate_frontend = Path(__file__).resolve().parents[2] / "frontend"
+FRONTEND_DIR = _candidate_frontend
 
 
 def validate_startup_config() -> None:
