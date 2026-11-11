@@ -3980,12 +3980,14 @@ function renderUsersTable(users) {
             let names = (user.assigned_location_names || []).filter(Boolean);
             // Priority 2: Use user.assigned_locations objects if present
             if (!names.length && Array.isArray(user.assigned_locations)) {
-                names = user.assigned_locations.map(l => (typeof l === 'object' ? l.name : l)).filter(Boolean);
+                names = user.assigned_locations.map(l => (typeof l === 'object' ? (l.name || locationMap[l.id]) : locationMap[l])).filter(Boolean);
             }
             // Priority 3: Resolve assigned_location_ids against locationMap
             if (!names.length && Array.isArray(user.assigned_location_ids)) {
                 names = user.assigned_location_ids.map(id => locationMap[id]).filter(Boolean);
             }
+            // Filter out any raw UUID format in case any leaked through
+            names = names.filter(n => typeof n === 'string' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(n.trim()));
             // Never display raw UUID numbers in the UI
             locNames = names.length > 0 ? names.join(', ') : '<span class="text-muted">None assigned</span>';
         }

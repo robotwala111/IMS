@@ -5,5 +5,7 @@
   "scripts": {
     "build": "npm --prefix frontend run build"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "@supabase/server": "^1.9.2"
+  }
 }

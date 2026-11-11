@@ -11,8 +11,15 @@ Creates the minimal baseline data for ScienceTech-IMS:
 """
 
 import asyncio
+import os
+import sys
 import uuid
 from datetime import datetime, timedelta
+
+# Ensure backend root is on sys.path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -297,7 +304,8 @@ async def seed_sample_items(db: AsyncSession) -> None:
             continue
 
         for idx, loc in enumerate(locations):
-            qty = stock_by_sku.get(item_data["sku"], [5, 5, 5])[idx] if idx < len(locations) else 5
+            stock_list = stock_by_sku.get(item_data["sku"], [5, 5, 5, 5])
+            qty = stock_list[idx] if idx < len(stock_list) else 5
             db.add(Stock(
                 id=str(uuid.uuid4()),
                 item_id=item_id,
@@ -347,7 +355,7 @@ async def seed_jobs(db: AsyncSession) -> None:
             "job_name": "Weld Inspection — Boiler Header Joints",
             "method": "ut",
             "quantity": 24, "coverage": "100%", "total": 24,
-            "accepted": 22, "reshoot": 2, "cut_films": 0,
+            "accepted": 22, "reshoot": 2, "cut_films": None, "cut_films_count": 0,
             "person_name": technician.name,
             "assigned_to_id": technician.id,
             "location_id": locations[0].id,
@@ -364,7 +372,7 @@ async def seed_jobs(db: AsyncSession) -> None:
             "job_name": "Turbine Blade Surface Crack Detection",
             "method": "pt",
             "quantity": 48, "coverage": "100%", "total": 48,
-            "accepted": 30, "reshoot": 0, "cut_films": 0,
+            "accepted": 30, "reshoot": 0, "cut_films": None, "cut_films_count": 0,
             "person_name": technician.name,
             "assigned_to_id": technician.id,
             "location_id": locations[1].id if len(locations) > 1 else locations[0].id,
@@ -379,7 +387,7 @@ async def seed_jobs(db: AsyncSession) -> None:
             "job_name": "Pipeline Girth Weld UT Inspection",
             "method": "ut",
             "quantity": 60, "coverage": "100%", "total": 60,
-            "accepted": 15, "reshoot": 1, "cut_films": 0,
+            "accepted": 15, "reshoot": 1, "cut_films": None, "cut_films_count": 0,
             "person_name": technician.name,
             "assigned_to_id": technician.id,
             "location_id": locations[2].id if len(locations) > 2 else locations[0].id,
