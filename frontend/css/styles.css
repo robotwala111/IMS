@@ -5387,10 +5387,28 @@ html.dark-mode .dashboard-welcome .welcome-actions .btn-outline {
     box-shadow: 0 2px 8px rgba(244, 176, 0, 0.4);
 }
 
+.cal-weekdays-row span:last-child {
+    color: #ef4444;
+    font-weight: 700;
+}
+
 .cal-day-cell.is-disabled {
-    color: #cbd5e1;
-    cursor: not-allowed;
-    opacity: 0.5;
+    color: #cbd5e1 !important;
+    cursor: not-allowed !important;
+    opacity: 0.4 !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+.cal-day-cell.is-disabled.is-sunday {
+    color: #ef4444 !important;
+    background: #fef2f2 !important;
+    border-color: #fee2e2 !important;
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    text-decoration: line-through;
+    user-select: none !important;
 }
 
 .cal-popover-footer {
@@ -5481,11 +5499,23 @@ html.dark-mode .dashboard-welcome .welcome-actions .btn-outline {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    max-height: 185px;
+    max-height: 220px;
     overflow-y: auto;
     padding: 3px 2px 4px;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+}
+
+@media (max-width: 640px) {
+    .contract-time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 440px) {
+    .contract-time-slots-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .contract-time-slots-grid::-webkit-scrollbar {
@@ -5501,18 +5531,19 @@ html.dark-mode .dashboard-welcome .welcome-actions .btn-outline {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 38px;
-    padding: 8px 10px;
+    min-height: 42px;
+    padding: 8px 12px;
     border-radius: 9px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
     color: #1e293b;
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
     outline: none;
+    white-space: nowrap;
 }
 
 .contract-time-chip:hover {
@@ -5656,7 +5687,9 @@ html.dark-mode .cal-nav-btn { background: #252d3d; border-color: #384559; color:
 html.dark-mode .cal-nav-btn:hover:not(:disabled) { border-color: #f4b000; color: #f4b000; background: #262418; }
 html.dark-mode .cal-day-cell { color: #e2e8f0; }
 html.dark-mode .cal-day-cell.is-valid:hover { background: #2a2416; border-color: #f4b000; color: #f4b000; }
-html.dark-mode .cal-day-cell.is-disabled { color: #475569; opacity: 0.45; }
+html.dark-mode .cal-weekdays-row span:last-child { color: #f87171; }
+html.dark-mode .cal-day-cell.is-disabled { color: #475569 !important; opacity: 0.35 !important; pointer-events: none !important; }
+html.dark-mode .cal-day-cell.is-disabled.is-sunday { color: #f87171 !important; background: #2d1818 !important; border-color: #451a1a !important; opacity: 0.45 !important; pointer-events: none !important; }
 html.dark-mode .cal-popover-footer { border-top-color: #26334d; color: #94a3b8; }
 html.dark-mode .contract-date-chip { background: #1e293b; border-color: #334155; }
 html.dark-mode .contract-date-chip .date-chip-day { color: #94a3b8; }

@@ -722,12 +722,17 @@ function getAmiroTomorrowDate() {
 }
 
 function getNextBookableDemoDate() {
-    return getAmiroTomorrowDate();
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0) { // 0 is Sunday - skip Sundays
+        d.setDate(d.getDate() + 1);
+    }
+    return getAmiroCalendarDate(d);
 }
 
 // --- Custom Interactive Demo Calendar Popover ---
-let calViewYear = 2026;
-let calViewMonth = 10; // 0-indexed (10 = November)
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
 
 function initCalendarPopover() {
     const trigger = document.getElementById('contract-custom-date-btn');
@@ -856,11 +861,15 @@ function renderPopoverCalendar() {
         const isPastOrToday = iso <= todayStr;
         const isTooFar = iso > maxIso;
         const isSelected = iso === selectedIso;
+        const checkDay = new Date(Date.UTC(calViewYear, calViewMonth, d)).getUTCDay();
+        const isSunday = checkDay === 0;
 
-        if (isPastOrToday) {
-            html += `<span class="cal-day-cell is-disabled" title="Same-day and past dates are unavailable">${d}</span>`;
+        if (isSunday) {
+            html += `<span class="cal-day-cell is-disabled is-sunday" title="Sundays are closed for demo appointments" aria-disabled="true" tabindex="-1">${d}</span>`;
+        } else if (isPastOrToday) {
+            html += `<span class="cal-day-cell is-disabled is-past" title="Same-day and past dates are unavailable" aria-disabled="true" tabindex="-1">${d}</span>`;
         } else if (isTooFar) {
-            html += `<span class="cal-day-cell is-disabled" title="Appointments available up to 90 days in advance">${d}</span>`;
+            html += `<span class="cal-day-cell is-disabled is-out-of-range" title="Appointments available up to 90 days in advance" aria-disabled="true" tabindex="-1">${d}</span>`;
         } else {
             html += `<button type="button" class="cal-day-cell is-valid ${isSelected ? 'is-selected' : ''}" data-date="${iso}" aria-label="${iso}">${d}</button>`;
         }
@@ -892,6 +901,10 @@ function renderQuickDateStrip(selectedDate) {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     while (dates.length < 5) {
+        if (d.getDay() === 0) { // 0 is Sunday - skip Sundays
+            d.setDate(d.getDate() + 1);
+            continue;
+        }
         const dateStr = getAmiroCalendarDate(d);
         const parts = new Intl.DateTimeFormat('en-US', {
             timeZone: 'Asia/Kolkata', weekday: 'short', month: 'short', day: 'numeric'
@@ -965,6 +978,21 @@ async function loadContractDemoSlots() {
         status.className = 'contract-demo-calendar-status is-error';
         updateDemoBookingButton();
         return;
+    }
+
+    const dateParts = dateInput.value.split('-').map(Number);
+    if (dateParts.length === 3) {
+        const checkSunday = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2])).getUTCDay();
+        if (checkSunday === 0) {
+            if (slotsGrid) slotsGrid.innerHTML = '<div class="contract-slots-empty"><i class="fas fa-calendar-times"></i> Sunday appointments are not available. Please choose Monday through Saturday.</div>';
+            if (slotsMeta) slotsMeta.textContent = 'Closed on Sundays';
+            timeInput.value = '';
+            timeInput.dataset.label = '';
+            status.textContent = 'Sundays are closed for demo appointments. Please choose another date (Monday to Saturday).';
+            status.className = 'contract-demo-calendar-status is-error';
+            updateDemoBookingButton();
+            return;
+        }
     }
 
 

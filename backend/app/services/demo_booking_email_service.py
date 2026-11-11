@@ -19,12 +19,22 @@ logger = get_logger(__name__)
 LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "amiro-logo.png"
 
 
-def _format_meeting_time(start_str: str, tz_name: str) -> str:
-    """Format ISO start string into a human-readable display."""
+def _format_meeting_time(start_str: str, tz_name: str, end_str: str = "", label: str = "") -> str:
+    """Format meeting time into a clean human-readable display."""
     try:
         dt = datetime.fromisoformat(start_str)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=ZoneInfo(tz_name))
+        day_str = dt.strftime("%A, %d %b %Y")
+        if label:
+            return f"{day_str} ({label})"
+        if end_str:
+            dt_end = datetime.fromisoformat(end_str)
+            if dt_end.tzinfo is None:
+                dt_end = dt_end.replace(tzinfo=ZoneInfo(tz_name))
+            start_fmt = dt.strftime("%I:%M %p").lstrip("0")
+            end_fmt = dt_end.strftime("%I:%M %p").lstrip("0")
+            return f"{day_str} from {start_fmt} to {end_fmt}"
         return dt.strftime("%A, %d %b %Y at %I:%M %p")
     except Exception:
         return start_str
@@ -84,7 +94,9 @@ def send_demo_booking_email(request: Any, booking: dict[str, Any]) -> bool:
     client_email = str(request.email).strip()
     timezone_name = booking.get("timezone", settings.DEMO_BOOKING_TIMEZONE)
     raw_start = booking.get("start", "")
-    formatted_time = _format_meeting_time(raw_start, timezone_name)
+    raw_end = booking.get("end", "")
+    slot_label = booking.get("slot_label", "")
+    formatted_time = _format_meeting_time(raw_start, timezone_name, end_str=raw_end, label=slot_label)
     meeting_link = booking.get("meeting_link") or "Meeting link will be shared shortly."
 
     # 1. Prepare Admin Notification Email

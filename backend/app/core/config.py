@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     DEMO_BOOKING_TIMEZONE: str = "Asia/Kolkata"
     DEMO_BOOKING_START_HOUR: int = 10
     DEMO_BOOKING_END_HOUR: int = 17
-    DEMO_BOOKING_DURATION_MINUTES: int = 30
+    DEMO_BOOKING_DURATION_MINUTES: int = 90
     DEMO_BOOKING_DAYS_AHEAD: int = 90
     DEMO_BOOKING_EMAIL_ENABLED: bool = False
 
