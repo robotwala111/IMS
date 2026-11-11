@@ -191,9 +191,7 @@ async def list_users(
     """
     user_service = UserService(db)
     
-    if current_user.role == UserRole.DEMO_USER:
-        role = UserRole.DEMO_USER
-    elif current_user.role == UserRole.HEAD_OFFICE_MANAGER and role not in (
+    if current_user.role == UserRole.HEAD_OFFICE_MANAGER and role not in (
         None,
         UserRole.LOCATION_MANAGER,
     ):
@@ -201,18 +199,18 @@ async def list_users(
             message="General Managers can view Location Manager accounts only"
         )
 
+    effective_role = (
+        UserRole.LOCATION_MANAGER
+        if current_user.role == UserRole.HEAD_OFFICE_MANAGER
+        else role
+    )
+
     users, total = await user_service.list_users(
         page=pagination["page"],
         page_size=pagination["page_size"],
         sort_by=pagination["sort_by"],
         sort_order=pagination["sort_order"],
-        role=(
-            UserRole.DEMO_USER
-            if current_user.role == UserRole.DEMO_USER
-            else UserRole.LOCATION_MANAGER
-            if current_user.role == UserRole.HEAD_OFFICE_MANAGER
-            else role
-        ),
+        role=effective_role,
         is_active=is_active,
         search=search,
     )

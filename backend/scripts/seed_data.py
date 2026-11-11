@@ -69,9 +69,10 @@ async def seed_locations(db: AsyncSession) -> None:
         return
 
     locations_data = [
-        {"name": "Bangalore Head Office",    "code": "BLR-001", "address": "Plot 45, Peenya Industrial Area, Phase 2", "city": "Bangalore",  "state": "Karnataka",  "country": "India", "postal_code": "560058"},
-        {"name": "Mangalore Branch",         "code": "MNG-001", "address": "KIADB Industrial Area, Baikampady",        "city": "Mangalore",  "state": "Karnataka",  "country": "India", "postal_code": "575011"},
-        {"name": "Hyderabad Regional Office","code": "HYD-001", "address": "IDA Jeedimetla, Phase III",                "city": "Hyderabad",  "state": "Telangana",  "country": "India", "postal_code": "500055"},
+        {"name": "Bangalore Head Office",       "code": "BLR-001", "address": "Plot 45, Peenya Industrial Area, Phase 2", "city": "Bangalore",  "state": "Karnataka",   "country": "India", "postal_code": "560058"},
+        {"name": "Pune Testing Facility",       "code": "PUN-001", "address": "Hinjawadi Phase 2, Industrial Tech Zone",   "city": "Pune",       "state": "Maharashtra", "country": "India", "postal_code": "411057"},
+        {"name": "Hyderabad Regional Hub",      "code": "HYD-001", "address": "IDA Jeedimetla, Phase III, Sector 5",       "city": "Hyderabad",  "state": "Telangana",   "country": "India", "postal_code": "500055"},
+        {"name": "Chennai Marine Testing Yard", "code": "CHN-001", "address": "Ennore Port Expressway, Ambattur",         "city": "Chennai",    "state": "Tamil Nadu",   "country": "India", "postal_code": "600058"},
     ]
 
     for loc in locations_data:

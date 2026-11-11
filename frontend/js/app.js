@@ -3965,9 +3965,15 @@ function renderUsersTable(users) {
     tbody.innerHTML = users.map(user => {
         const roleBadge = ROLE_BADGES[user.role] || 'badge-secondary';
         const roleLabel = ROLE_LABELS[user.role] || user.role;
-        const locNames = user.role === 'demo_user'
-            ? '<span class="text-muted">Demo module access</span>'
-            : (user.assigned_location_ids || []).map(id => locationMap[id] || id).join(', ') || '<span class="text-muted">All / None</span>';
+        let locNames;
+        if (user.role === 'demo_user') {
+            locNames = '<span class="badge badge-secondary">All Locations (Demo)</span>';
+        } else if (user.role === 'admin' || user.role === 'head_office_manager') {
+            locNames = '<span class="badge badge-secondary">All Locations</span>';
+        } else {
+            const locList = (user.assigned_location_ids || []).map(id => locationMap[id] || id).filter(Boolean);
+            locNames = locList.length > 0 ? locList.join(', ') : '<span class="text-muted">None assigned</span>';
+        }
         let actionsHtml = (
             perms.isAdmin || (perms.isHOManager && user.role === 'location_manager')
         ) ? `<button class="btn-icon" onclick="editUser('${user.id}')" title="Edit"><i class="fas fa-edit"></i></button>` : '';
@@ -9601,8 +9607,7 @@ async function showAddCalibrationModal(assetId) {
 async function loadUsers() {
     try {
         // Ensure locations are loaded for the table display
-        const isDemoUser = AuthAPI.getUser()?.role === 'demo_user';
-        if (!isDemoUser && (!locations || locations.length === 0)) {
+        if (!locations || locations.length === 0) {
             try {
                 const locData = await LocationsAPI.getAll({ page_size: 500 });
                 locations = Array.isArray(locData) ? locData : (locData.items || []);
