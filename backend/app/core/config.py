@@ -10,7 +10,7 @@ Usage:
 """
 
 from functools import lru_cache
-from typing import List
+from typing import Any, List, Union
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1"]
-    CORS_ORIGINS: List[str] = [
+    ALLOWED_HOSTS: Union[List[str], str] = ["localhost", "127.0.0.1"]
+    CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
     SMTP_FROM_EMAIL: str = "noreply@sciencetech-ims.local"
     SMTP_FROM_NAME: str = "ScienceTech-IMS"
-    LOW_STOCK_ALERT_EMAILS: List[str] = []
+    LOW_STOCK_ALERT_EMAILS: Union[List[str], str] = []
 
     # Public demo request email (locked-module enquiry form)
     DEMO_REQUEST_ADMIN_EMAIL: str = "amirotechsolutions.sales@gmail.com"
@@ -104,7 +104,7 @@ class Settings(BaseSettings):
     # Archive & Data Retention
     ARCHIVE_RETENTION_MONTHS: int = 3
     ARCHIVE_WARNING_DAYS: int = 5
-    ARCHIVE_RECIPIENT_EMAILS: List[str] = []  # GM/CEO emails; falls back to ADMIN/HEAD_OFFICE_MANAGER users
+    ARCHIVE_RECIPIENT_EMAILS: Union[List[str], str] = []  # GM/CEO emails; falls back to ADMIN/HEAD_OFFICE_MANAGER users
     ARCHIVE_EMAIL_ATTACHMENTS_ENABLED: bool = False
     GENERATED_DOCUMENT_RETENTION_DAYS: int = 5
     MONTHLY_DOCUMENT_ZIP_MAX_MB: int = 20
@@ -146,14 +146,19 @@ class Settings(BaseSettings):
 
     @field_validator("CORS_ORIGINS", "ALLOWED_HOSTS", "ALLOWED_FILE_TYPES", "LOW_STOCK_ALERT_EMAILS", "ARCHIVE_RECIPIENT_EMAILS", mode="before")
     @classmethod
-    def parse_list(cls, v: str | List[str]) -> List[str]:
-        """Parse comma-separated string or JSON list into Python list."""
+    def parse_list(cls, v: Any) -> List[str]:
+        """Parse comma-separated string, wildcard, or JSON list into Python list."""
         if isinstance(v, str):
             import json
-            try:
-                return json.loads(v)
-            except json.JSONDecodeError:
-                return [i.strip() for i in v.split(",") if i.strip()]
+            s = v.strip()
+            if s == "*":
+                return ["*"]
+            if s.startswith("[") and s.endswith("]"):
+                try:
+                    return json.loads(s)
+                except Exception:
+                    pass
+            return [i.strip() for i in s.split(",") if i.strip()]
         return v
 
     @field_validator("GOOGLE_CALENDAR_REFRESH_TOKEN", "GOOGLE_CALENDAR_CLIENT_ID", "GOOGLE_CALENDAR_CLIENT_SECRET", mode="before")
